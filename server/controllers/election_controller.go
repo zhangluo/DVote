@@ -93,7 +93,7 @@ func AddCandidate(c *gin.Context) {
 	}
 
 	// 将候选人信息提交到链上
-	txHash, err := models.AddCandidateToChain(candidate.Name, imageCID, descCID, ipfsShell, client, auth)
+	txHash, err := models.AddCandidateToChain(candidate.Id, candidate.Name, imageCID, descCID, ipfsShell, client, auth)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法添加候选人: " + err.Error()})
 		return
