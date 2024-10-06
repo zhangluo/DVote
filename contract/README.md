@@ -11,6 +11,8 @@ REPORT_GAS=true npx hardhat test
 npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Lock.js
 
-abigen --abi election.abi --pkg models --out ElectionContract.go
+abigen --abi DVote.abi --pkg models --out ElectionContract.go
+
+ npx hardhat run scripts/deploy.js --network sepolia
 
 ```
