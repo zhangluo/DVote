@@ -15,4 +15,7 @@ abigen --abi DVote.abi --pkg models --out ElectionContract.go
 
  npx hardhat run scripts/deploy.js --network sepolia
 
+ npx hardhat run scripts/deploy.js --network hardhat
+
+
 ```

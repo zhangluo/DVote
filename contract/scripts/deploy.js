@@ -2,15 +2,20 @@ async function main() {
     const DVote = await ethers.getContractFactory("DVote");
     console.log("Deploying DVote...");
 
-    const feeData = await ethers.provider.getFeeData();
-    const dvote = await DVote.deploy({
-        maxFeePerGas: feeData.maxFeePerGas, // 使用当前的最大费用
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas, // 使用当前的优先费用
-        gasLimit: 1000000
-    });
-    await dvote.deployed();
+    // const feeData = await ethers.provider.getFeeData();
+    // const dvote = await DVote.deploy({
+    //     maxFeePerGas: feeData.maxFeePerGas, // 使用当前的最大费用
+    //     maxPriorityFeePerGas: feeData.maxPriorityFeePerGas, // 使用当前的优先费用
+    //     gasLimit: 1000000
+    // });
+    // await dvote.deployed();
 
-    console.log("DVote deployed to:", dvote.address);
+
+    const dVote = await DVote.deploy();
+
+    await dVote.deployed();
+
+    console.log("DVote deployed to:", dVote.address);
   }
   
   main()

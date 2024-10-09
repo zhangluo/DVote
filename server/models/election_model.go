@@ -55,7 +55,7 @@ const ElectionContractABI = `[
 ]`
 
 // ElectionContractAddress 是智能合约的地址，需根据实际部署的合约进行替换
-const ElectionContractAddress = "0xYourContractAddress"
+const ElectionContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
 // CreateElectionOnChain 在链上创建选举
 func CreateElectionOnChain(election Election, ipfsShell *utils.IPFSShell, client *ethclient.Client, auth *bind.TransactOpts) (string, error) {

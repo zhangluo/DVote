@@ -5,66 +5,88 @@ const { ethers } = require("hardhat");
 describe("DVote Contract", function () {
     let DVote;
     let dvote;
-    let owner;
+    let admin;
     let addr1;
     let addr2;
 
     beforeEach(async function () {
-        [owner, addr1, addr2] = await ethers.getSigners();
+        // 获取账户
+        [admin, addr1, addr2] = await ethers.getSigners();
+
+        // 获取合约工厂并部署合约
         DVote = await ethers.getContractFactory("DVote");
         dvote = await DVote.deploy();
         await dvote.deployed();
     });
 
-    it("Should create an election", async function () {
-        await dvote.createElection("Test Election");
-        const election = await dvote.elections(1);
-        expect(election.name).to.equal("Test Election");
-        expect(election.isActive).to.equal(true);
-    });
+    describe("Election Management", function () {
+        it("Should create an election successfully", async function () {
+            await dvote.createElection("Test Election", 3600);
+            const [name, startTime, endTime] = await dvote.getElectionInfo(1);
 
-    it("Should add a candidate", async function () {
-        await dvote.createElection("Test Election");
-        await dvote.addCandidate(1, "Alice");
-        const candidate = await dvote.elections(1).candidates(1);
-        expect(candidate.name).to.equal("Alice");
-        expect(candidate.voteCount).to.equal(0);
-        expect(candidate.fundsReceived).to.equal(0);
-    });
+            expect(name).to.equal("Test Election");
+            // expect(startTime).to.be.closeTo(Math.floor(Date.now() / 1000), 5);
+        });
 
-    it("Should allow voting for a candidate", async function () {
-        await dvote.createElection("Test Election");
-        await dvote.addCandidate(1, "Alice");
-        await dvote.vote(1, 1);
-        const candidate = await dvote.elections(1).candidates(1);
-        expect(candidate.voteCount).to.equal(1);
-    });
+        it("Should add a candidate to the election", async function () {
+            await dvote.createElection("Test Election", 3600);
+            await dvote.addCandidate(1, "Candidate 1", "Description", "http://image.url");
 
-    it("Should allow donations to a candidate", async function () {
-        await dvote.createElection("Test Election");
-        await dvote.addCandidate(1, "Alice");
-        await dvote.donate(1, 1, { value: ethers.utils.parseEther("1.0") });
-        const candidate = await dvote.elections(1).candidates(1);
-        expect(candidate.fundsReceived).to.equal(ethers.utils.parseEther("1.0"));
-    });
+            const [name] = await dvote.getCandidateInfo(1, 1);
+            expect(name).to.equal("Candidate 1");
+        });
 
-    it("Should end an election", async function () {
-        await dvote.createElection("Test Election");
-        await dvote.endElection(1);
-        const election = await dvote.elections(1);
-        expect(election.isActive).to.equal(false);
-    });
+        it("Should allow voting", async function () {
+            await dvote.createElection("Test Election", 3600);
+            await dvote.addCandidate(1, "Candidate 1", "Description", "http://image.url");
 
-    it("Should revert voting if election is not active", async function () {
-        await dvote.createElection("Test Election");
-        await dvote.addCandidate(1, "Alice");
-        await dvote.endElection(1);
-        await expect(dvote.vote(1, 1)).to.be.revertedWith("Election is not active");
-    });
+            await dvote.connect(addr1).vote(1, 1);
+            const [, , , voteCount] = await dvote.getCandidateInfo(1, 1);
+            console.log("voteCount:", voteCount); // 输出日志
+            expect(voteCount).to.equal(1);
+        });
 
-    it("Should revert donation if amount is zero", async function () {
-        await dvote.createElection("Test Election");
-        await dvote.addCandidate(1, "Alice");
-        await expect(dvote.donate(1, 1, { value: 0 })).to.be.revertedWith("Donation must be greater than 0");
+        it("Should not allow duplicate votes", async function () {
+            await dvote.createElection("Test Election", 3600);
+            await dvote.addCandidate(1, "Candidate 1", "Description", "http://image.url");
+
+            await dvote.connect(addr1).vote(1, 1);
+            await expect(dvote.connect(addr1).vote(1, 1)).to.be.revertedWith("you have already voted");
+        });
+
+        it("Should allow donations", async function () {
+            await dvote.createElection("Test Election", 3600);
+            await dvote.addCandidate(1, "Candidate 1", "Description", "http://image.url");
+
+            await dvote.connect(addr1).donate(1, 1, { value: ethers.utils.parseEther("1") });
+
+            const [, , , , donationAmount] = await dvote.getCandidateInfo(1, 1);
+            expect(donationAmount).to.equal(ethers.utils.parseEther("1"));
+        });
+
+        it("Should allow candidate to withdraw donations after election ends", async function () {
+            await dvote.createElection("Test Election", 1); // 短时间选举
+            await dvote.addCandidate(1, "Candidate 1", "Description", "http://image.url");
+
+            await dvote.connect(addr1).donate(1, 1, { value: ethers.utils.parseEther("1") });
+
+            // 快进时间，使得选举结束
+            await ethers.provider.send("evm_increaseTime", [2]);
+            await ethers.provider.send("evm_mine");
+
+            await dvote.connect(addr1).withdraw(1, ethers.utils.parseEther("1"));
+            const [, , , , donationAmount] = await dvote.getCandidateInfo(1, 1);
+            expect(donationAmount).to.equal(0);
+        });
+
+        it("Should not allow withdrawal if candidate is not found", async function () {
+            await dvote.createElection("Test Election", 3600);
+            await dvote.addCandidate(1, "Candidate 1", "Description", "http://image.url");
+
+            await ethers.provider.send("evm_increaseTime", [3600]);
+            await ethers.provider.send("evm_mine");
+
+            await expect(dvote.connect(addr2).withdraw(1, 1)).to.be.revertedWith("you are not a candidate");
+        });
     });
 });
