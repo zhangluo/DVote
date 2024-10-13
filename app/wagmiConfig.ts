@@ -11,6 +11,7 @@ import {
       chains: [mainnet, polygon, optimism, arbitrum, base, sepolia, zora ],
       ssr: true,
       storage: createStorage({
+        key: 'DVote',
         storage: cookieStorage,
       }),
       transports: {

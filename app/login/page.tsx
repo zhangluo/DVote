@@ -5,22 +5,24 @@ import React,{useEffect}from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation'; // 使用新的 navigation 包
+import { setConnectionStatus } from '@/app/wagmiClient';
+
 const AuthPage = React.memo(() => {
-  
-  const { address, connector, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const router = useRouter();
-  // useEffect(()=> {
-  //   if (isConnected) {
-  //     const addr = `0x${address}`
-  //     localStorage.setItem('address', addr)
-  //     router.push('/');
-  //   }
-  // }, [isConnected])
+
+  useEffect(()=> {
+    if (isConnected) {
+      setConnectionStatus('connected');
+      router.push('/');
+    }
+  }, [isConnected]);
+
   return (
     <>
       <div style={styles.pageBackground}>
         <div style={styles.container}>
-          <h1 style={styles.title}>欢迎来到Dvote系统</h1>
+          <h1 style={styles.title}>Welcome to DVote System</h1>
           {/* <p style={styles.subtitle}>Secure and stylish login experience.</p> */}
           <ConnectButton />
         </div>
