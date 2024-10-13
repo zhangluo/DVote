@@ -1,101 +1,187 @@
-import Image from "next/image";
+"use client";
+import ConnectWallet from '@/components/wallet/connect'
+import Counter from './Counter';
+import { Provider } from 'react-redux';
+import store from '../store';
+import { Button, Col, Row, Statistic, Card, Tabs, Table, Modal, InputNumber } from 'antd';
+import { useState } from "react";
+import type { TableProps, TabsProps } from 'antd';
+// import LineChart from '@/components/LineChart';
+import LineChart from '../components/LineChart';
+
+interface DataType {
+  key: string;
+  date: string;
+  num: number;
+  money: number;
+}
+interface DataType2 {
+  key: string;
+  candidater: string;
+  num: number;
+  money: number;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [currentTab, setCurrentTab] = useState('1')
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+  const showModal = (user:any) => {
+      setIsModalOpen(true);
+    };
+  
+  const handleOk = () => {
+  setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+  setIsModalOpen(false);
+  };
+
+
+  const columns: TableProps<DataType>['columns'] = [
+    {
+      title: '日期',
+      dataIndex: 'date',
+      key: 'date',
+    },
+    {
+      title: '投票数',
+      dataIndex: 'num',
+      key: 'num',
+      render: (text: string) => <a>{text}</a>,
+    },
+    {
+      title: '捐款金额',
+      dataIndex: 'money',
+      key: 'money',
+    },
+  ];
+  const columns2: TableProps<DataType2>['columns'] = [
+    {
+      title: '候选人',
+      dataIndex: 'candidater',
+      key: 'candidater',
+    },
+    {
+      title: '总投票数',
+      dataIndex: 'num',
+      key: 'num'
+    },
+    {
+      title: '总捐款金额',
+      dataIndex: 'money',
+      key: 'money',
+    },
+  ];
+  
+  const data: DataType[] = [
+    {
+      key: '1',
+      date: '2024-10-2',
+      num: 32,
+      money: 667
+    },
+    {
+      key: '2',
+      date: '2024-10-2',
+      num: 12,
+      money: 1667
+    },
+    {
+      key: '3',
+      date: '2024-10-2',
+      num: 3442,
+      money: 6267
+    },
+  ];
+  const data2: DataType2[] = [
+    {
+      key: '1',
+      candidater: '韩立',
+      num: 32,
+      money: 667
+    },
+    {
+      key: '2',
+      candidater: '王林',
+      num: 32,
+      money: 1667
+    },
+    {
+      key: '3',
+      candidater: '陈平安',
+      num: 3442,
+      money: 6267
+    },
+  ];
+
+  const onChange = (key: string) => {
+    console.log(key);
+    setCurrentTab(key)
+  };
+  
+  const items: TabsProps['items'] = [
+    {
+      key: '1',
+      label: '我的数据',
+    },
+    {
+      key: '2',
+      label: '竞争对手数据',
+    },
+  ];
+  return (
+    <>
+      <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+      {currentTab === '1' ? 
+      (
+      <>
+        <Card title="我的投票和捐款数">
+          <Row gutter={16}>
+              <Col span={12}>
+                <Statistic title="总投票数" value={112893} />
+              </Col>
+              <Col span={12}>
+                <Statistic title="总捐款金额" value={112893} precision={2} />
+                <Button style={{ marginTop: 16 }} type="primary" onClick={showModal}>
+                  提款
+                </Button>
+              </Col>
+          </Row>
+        </Card>
+        <h2 style={{padding: '20px 0', fontSize: '16px', fontWeight: 'bold'}}>每天投票和捐款统计</h2>
+        <Table<DataType> columns={columns} dataSource={data} />
+        <LineChart />
+        <Modal 
+          title="提款"
+          centered={true} 
+          okText="确认提款" 
+          cancelText="取消"
+          open={isModalOpen}
+          width={320} 
+          onOk={handleOk} 
+          onCancel={handleCancel}>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+              <span style={{width: '80px'}}>捐款金额:</span>
+              <InputNumber suffix="wei" style={{ width: '100%' }} />
+          </div>
+        </Modal>
+
+      </>
+      ) :
+      (
+        <>
+        <h2 style={{padding: '20px 0', fontSize: '16px', fontWeight: 'bold'}}>投票和捐款数据</h2>
+        <Table<DataType2> columns={columns2} dataSource={data2} />
+          <ConnectWallet />
+          <Provider store={store}>
+            <Counter/>
+          </Provider>
+        </>
+      )
+    }
+    
+    </>
+  )
 }

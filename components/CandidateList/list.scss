@@ -1,0 +1,19 @@
+.sortWrap {
+    margin-bottom: 20px;
+}
+.candidate-info-wraps {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    .actions {
+        margin-left: auto;
+        display: flex;
+        gap: 5px;
+    }
+    .custom-success {
+        background: #7dd657;
+        &:hover {
+            background: #5fac3e !important;
+        }
+    }
+}

@@ -19,7 +19,14 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
-
+.container {
+  padding: 20px;
+}
+.TableTitle {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 0 0 20px 0;
+}
 @layer utilities {
   .text-balance {
     text-wrap: balance;
