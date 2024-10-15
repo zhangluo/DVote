@@ -5,18 +5,55 @@ import React,{useEffect}from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation'; // 使用新的 navigation 包
-import { setConnectionStatus } from '@/app/wagmiClient';
+import { setConnectionStatus } from '@/config/wagmi/wagmiClient';
+import { useSignMessage } from 'wagmi'
+import { getConfig } from '@/config/wagmi/wagmiConfig';
+import { type UseSignMessageParameters } from 'wagmi'
 
 const AuthPage = React.memo(() => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const router = useRouter();
+  const account = useAccount();
+  const { signMessage, isSuccess, isError, data, error } = useSignMessage();
+  // useEffect( () =>{
+  //   // 如果没有钱包，直接返回
+  //   if(!account) return;
+  //   (async()=>{
+  //     // const token =localStorage.getItem("token")
+  //     // if(token) return;
+  //     const signature = await signMessage(getConfig(), { message: 'hello world' })
+  //     console.log(signature)
+  //   })();
+  // },[account]);
+  
 
   useEffect(()=> {
     if (isConnected) {
       setConnectionStatus('connected');
+      (async()=>{
+        // const token =localStorage.getItem("token")
+        // if(token) return;
+        const signature = await signMessage({
+          message: `hello world ${address}`,
+         })
+        console.log('signature', signature)
+      })();
+      // router.push('/');
+    }
+  }, [isConnected, address]);
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      console.log('Signature successful:', data);
       router.push('/');
     }
-  }, [isConnected]);
+  }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (isError && error) {
+      console.error('Signature failed:', error);
+    }
+  }, [isError, error]);
 
   return (
     <>

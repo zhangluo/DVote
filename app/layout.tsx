@@ -1,21 +1,21 @@
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
+import "@/static/css/globals.css";
 import React from "react";
 import { type ReactNode } from 'react';
-import { Providers } from './wagmiProviders';
-import { getConfig } from './wagmiConfig';
+import { Providers } from '../config/wagmi/wagmiProviders';
+import { getConfig } from '../config/wagmi/wagmiConfig';
 import { headers } from 'next/headers'
 import { cookieToInitialState } from 'wagmi'
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+  src: "../static/fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "../static/fonts/GeistVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });

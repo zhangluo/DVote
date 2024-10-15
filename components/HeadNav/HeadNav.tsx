@@ -6,7 +6,7 @@ import { Layout, Menu } from 'antd';
 import RainbowConnect from '@/components/wallet/connectButton';
 import { useRouter } from 'next/navigation'; 
 import { useAccount } from 'wagmi';
-import { clearConnectionStatus } from '@/app/wagmiClient';
+import { clearConnectionStatus } from '@/config/wagmi/wagmiClient';
 import Link from "next/link";
 const { Header } = Layout;
 
@@ -30,16 +30,29 @@ const HeadNav: React.FC = () => {
     }
   }, [isConnected]); // 当连接状态变化时触发
 
+const menuItems = [
+  {
+    key: '1',
+    label: <Link href={"/"}>首页</Link>,
+  },
+  {
+    key: '2',
+    label: <Link href={"/admin"}>选举</Link>,
+  },
+  {
+    key: '3',
+    label: <Link href={"/candidate"}>候选人</Link>,
+  },
+];
+
+
+
   return (
     <Header style={{ display: 'flex', alignItems: 'center' }}>
       <div className="logo" style={{ color: 'white', fontWeight: 'bold', fontSize: '18px', marginRight: '60px' }}>
         DVote
       </div>
-      <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-        <Menu.Item key="1"><Link href={"/"}>首页</Link></Menu.Item>
-        <Menu.Item key="2"><Link href={"/admin"}>选举</Link></Menu.Item>
-        <Menu.Item key="3"><Link href={"/candidate"}>候选人</Link></Menu.Item>
-      </Menu>
+      <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} items={menuItems} />
       <div style={{marginLeft: 'auto'}}>
         <RainbowConnect/>
       </div>
