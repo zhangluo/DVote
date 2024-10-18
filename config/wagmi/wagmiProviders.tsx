@@ -8,7 +8,7 @@ import { type State, WagmiProvider } from 'wagmi'
 import HeadNav from "@/components/HeadNav/HeadNav";
 
 import { usePathname } from 'next/navigation'; // 使用新的 navigation 包
-import { getConfig } from './wagmiConfig';
+import { config } from './wagmiConfig';
 
 type Props = {
   children: ReactNode,   
@@ -16,7 +16,6 @@ type Props = {
 }
 
 export function Providers({ children, initialState }: Props) {
-  const [config] = useState(() => getConfig())
   const [queryClient] = useState(() => new QueryClient())
   const pathname = usePathname();
   return (

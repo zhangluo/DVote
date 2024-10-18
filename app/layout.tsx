@@ -5,7 +5,7 @@ import "@/static/css/globals.css";
 import React from "react";
 import { type ReactNode } from 'react';
 import { Providers } from '../config/wagmi/wagmiProviders';
-import { getConfig } from '../config/wagmi/wagmiConfig';
+import { config } from '../config/wagmi/wagmiConfig';
 import { headers } from 'next/headers'
 import { cookieToInitialState } from 'wagmi'
 
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const initialState = cookieToInitialState(
-    getConfig(),
+    config,
     headers().get('cookie')
   )
   return (

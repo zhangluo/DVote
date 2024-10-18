@@ -6,22 +6,20 @@ import {
   } from 'wagmi'
   import { mainnet, polygon, optimism, arbitrum, base, sepolia, zora } from 'wagmi/chains'
   
-  export function getConfig() {
-    return createConfig({
-      chains: [mainnet, polygon, optimism, arbitrum, base, sepolia, zora ],
-      ssr: true,
-      storage: createStorage({
-        key: 'DVote',
-        storage: cookieStorage,
-      }),
-      transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
-        [optimism.id]: http(),
-        [polygon.id]: http(),
-        [arbitrum.id]: http(),
-        [base.id]: http(),
-        [zora.id]: http(),
-      },
-    })
-  }
+  export const config = createConfig({
+    chains: [mainnet, sepolia, polygon, optimism, arbitrum, base, zora ],
+    ssr: false,
+    storage: createStorage({
+      key: 'DVote',
+      storage: cookieStorage,
+    }),
+    transports: {
+      [mainnet.id]: http(),
+      [sepolia.id]: http(),
+      [optimism.id]: http(),
+      [polygon.id]: http(),
+      [arbitrum.id]: http(),
+      [base.id]: http(),
+      [zora.id]: http(),
+    },
+  })

@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 import { Layout, Menu } from 'antd';
 import RainbowConnect from '@/components/wallet/connectButton';
 import { useRouter } from 'next/navigation'; 
-import { useAccount } from 'wagmi';
-import { clearConnectionStatus } from '@/config/wagmi/wagmiClient';
+import { useAccount, useAccountEffect  } from 'wagmi';
+import { clearConnectionStatus } from '@/config/wagmi/wagmiCookies';
 import Link from "next/link";
 const { Header } = Layout;
 
@@ -20,15 +20,25 @@ const HeadNav: React.FC = () => {
   if (noNavPaths.includes(pathname)) {
     return null;
   }
-  const {isConnected} = useAccount();
-  useEffect(() => {
-    if (!isConnected) {
-      // 执行用户断开连接后的操作
-      console.log('Disconnected from wallet');
+  // const {isConnected} = useAccount();
+  useAccountEffect({
+    onConnect(data) {
+      console.log('Connected!', data)
+    },
+    onDisconnect() {
+      console.log('Disconnected!')
       clearConnectionStatus();
       router.push('/login');
-    }
-  }, [isConnected]); // 当连接状态变化时触发
+    },
+  })
+  // useEffect(() => {
+  //   if (!isConnected) {
+  //     // 执行用户断开连接后的操作
+  //     console.log('Disconnected from wallet');
+  //     clearConnectionStatus();
+  //     router.push('/login');
+  //   }
+  // }, [isConnected]); // 当连接状态变化时触发
 
 const menuItems = [
   {

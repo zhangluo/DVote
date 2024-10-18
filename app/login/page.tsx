@@ -5,10 +5,8 @@ import React,{useEffect}from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation'; // 使用新的 navigation 包
-import { setConnectionStatus } from '@/config/wagmi/wagmiClient';
+import { setConnectionStatus } from '@/config/wagmi/wagmiCookies';
 import { useSignMessage } from 'wagmi'
-import { getConfig } from '@/config/wagmi/wagmiConfig';
-import { type UseSignMessageParameters } from 'wagmi'
 
 const AuthPage = React.memo(() => {
   const { address, isConnected } = useAccount();
@@ -33,9 +31,10 @@ const AuthPage = React.memo(() => {
       (async()=>{
         // const token =localStorage.getItem("token")
         // if(token) return;
-        const signature = await signMessage({
+        const signature= await signMessage({
           message: `hello world ${address}`,
          })
+        //  localStorage.setItem('signature', signature)
         console.log('signature', signature)
       })();
       // router.push('/');

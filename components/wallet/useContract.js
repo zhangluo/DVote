@@ -1,51 +1,52 @@
 'use client';
 import { useEffect, useState } from "react";
 import { ethers } from 'ethers';
-import "./infos.css";
+import { useAccount } from 'wagmi';
 import faucetContract from "@/app/ethereum/faucet";
 
 function WalletInfos() {
-  const [walletAddress, setWalletAddress] = useState("");
+  const { address, isConnected } = useAccount();
+  const [walletAddress, setWalletAddress] = useState(address);
   const [signer, setSinger] = useState();
-  const [fcContract, setFcContract] = useState();
+  const [DvoteContract, setDvoteContract] = useState();
   const [withdrawError, setWithdrawError] = useState("");
   const [withdrawSuceess, setWithdrawSuccess] = useState("");
   const [transactionData, setTransationData] = useState("");
   const [provider, setProvider] = useState(null);
 
-  useEffect(() => {
-    getCurrentWalletConnected();
-    addWalletListener();
-  }, [walletAddress]);
+  // useEffect(() => {
+  //   getCurrentWalletConnected();
+  //   addWalletListener();
+  // }, [walletAddress]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {
-      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-      setProvider(web3Provider);
-    } else {
-      console.error("MetaMask is not installed. Please install it to use this application.");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {
+  //     const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+  //     setProvider(web3Provider);
+  //   } else {
+  //     console.error("MetaMask is not installed. Please install it to use this application.");
+  //   }
+  // }, []);
 
-  const connectWallet = async () => {
-    if (typeof window != "undefined" && typeof window.ethereum != "undefined") {
-      try {
-        /* get account*/
-        const accounts = await provider.send("eth_requestAccounts", []) 
-        /* get signer */
-        setSinger(provider.getSigner()); 
-        /*get contract local instance*/ 
-        setFcContract(faucetContract(provider));
-        setWalletAddress(accounts[0]);
-        console.log(accounts[0]);
-      } catch (err) {
-        console.error(err.message);
-      }
-    } else {
-      /* MetaMask is not installed */
-      console.log("Please install MetaMask");
-    }
-  };
+  // const connectWallet = async () => {
+  //   if (typeof window != "undefined" && typeof window.ethereum != "undefined") {
+  //     try {
+  //       /* get account*/
+  //       const accounts = await provider.send("eth_requestAccounts", []) 
+  //       /* get signer */
+  //       setSinger(provider.getSigner()); 
+  //       /*get contract local instance*/ 
+  //       setFcContract(faucetContract(provider));
+  //       setWalletAddress(accounts[0]);
+  //       console.log(accounts[0]);
+  //     } catch (err) {
+  //       console.error(err.message);
+  //     }
+  //   } else {
+  //     /* MetaMask is not installed */
+  //     console.log("Please install MetaMask");
+  //   }
+  // };
 
   const getCurrentWalletConnected = async () => {
     if (typeof window != "undefined" && typeof window.ethereum != "undefined") {
