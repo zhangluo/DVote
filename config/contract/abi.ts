@@ -210,7 +210,7 @@ export const abi = [
 		"inputs": [
 			{
 				"internalType": "address[]",
-				"name": "_addr",
+				"name": "_addrs",
 				"type": "address[]"
 			}
 		],
@@ -338,68 +338,6 @@ export const abi = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_addr",
-				"type": "address"
-			}
-		],
-		"name": "getAdminStatus",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "_isAdmin",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getAllCandidatorsByElection",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "bool[]",
-				"name": "",
-				"type": "bool[]"
-			},
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "getAllElections",
 		"outputs": [
@@ -438,122 +376,51 @@ export const abi = [
 		"name": "getCandidates",
 		"outputs": [
 			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			},
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			},
-			{
-				"internalType": "bool[]",
-				"name": "",
-				"type": "bool[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "electionId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_candidatorId",
-				"type": "uint256"
-			}
-		],
-		"name": "getCandidatorInfo",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_electionId",
-				"type": "uint256"
-			}
-		],
-		"name": "getElectionInfo",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "description",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "imageUrl",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "voteCount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "donationAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address payable",
+						"name": "candidateAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isValid",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct DVote.Candidate[]",
+				"name": "candidates",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",

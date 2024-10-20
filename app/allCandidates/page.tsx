@@ -15,6 +15,7 @@ interface ListType {
   donationAmounts: bigint;
   isValids: boolean;
   candidateAddresses: string;
+  electionIds: bigint;
 }
 
 const App: React.FC = () => {
@@ -45,7 +46,8 @@ const App: React.FC = () => {
           bigint[],
           bigint[],
           boolean[],
-          string[]
+          string[],
+          bigint[],
         ];
         const res: Array<ListType> = [];
         if (result) {
@@ -59,6 +61,7 @@ const App: React.FC = () => {
               donationAmounts: typedResult[4][i],
               isValids: typedResult[5][i],
               candidateAddresses: typedResult[6][i],
+              electionIds: typedResult[7][i],
             });
           }
           setCandidateList(res);
@@ -111,6 +114,7 @@ const App: React.FC = () => {
         abi: ABIConfig.abi,
         functionName: 'donate',
         args: [
+          BigInt(Number(currentCandidate?.electionIds)),
           BigInt(Number(currentCandidate?.ids))
         ],
         value: BigInt(donateValue), 
@@ -149,7 +153,10 @@ const App: React.FC = () => {
         address: ABIConfig.address,
         abi: ABIConfig.abi,
         functionName: 'vote',
-        args: [],
+        args: [
+          BigInt(Number(currentCandidate?.electionIds)),
+          BigInt(Number(currentCandidate?.ids))
+        ],
         connector
       }).then((TXHash) => {
         waitForTransactionReceipt(config, {
@@ -202,7 +209,7 @@ const App: React.FC = () => {
                   src="https://api.dicebear.com/7.x/miniavs/svg?seed=1"
                 />
                 <div className="infos">
-                  <p>候选人： {candidate.names}</p>
+                  <p>选举ID {candidate.electionIds}</p>
                   <p>投票数： {candidate.voteCounts.toString()}</p>
                   <p>捐款数： {candidate.donationAmounts.toString()} wei</p>
                 </div>

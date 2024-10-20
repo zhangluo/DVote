@@ -47,11 +47,6 @@ const HeadNav: React.FC = () => {
     return null;
   }
 
-  // // 防止服务端渲染时显示错误的菜单项
-  if (!isMounted || isAdmin === null) {
-    return null; // 如果组件还没有在客户端挂载，返回 null 以避免水合错误
-  }
-
   return (
     <Header style={{ 
       display: 'flex', 
