@@ -2,15 +2,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+
 // Define the login page path and paths to protect
 const loginPagePath = '/login';
-const protectedPaths = ['/admin', '/candidate', '/admin/candidateList', '/']; // Add more protected paths as needed
 
 export function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
+  const isAdminStatus = req.cookies.get('isAdmin');
   const connectionStatus = req.cookies.get('connectionStatus');
-
+  
+  // const protectedPaths = isAdminStatus?.value == 'true' ? ['/admin', '/candidate', '/admin/candidateList', '/'] : ['/']  // Add more protected paths as needed
+  const protectedPaths = ['/admin', '/candidate', '/candidateList', '/']
 
   // 如果用户在登录页且已登录，跳转到根目录
   if (pathname === loginPagePath && connectionStatus) {
@@ -18,7 +21,11 @@ export function middleware(req: NextRequest) {
     url.pathname = '/';
     return NextResponse.redirect(url);
   } 
-  
+  if (connectionStatus && !protectedPaths.includes(pathname)) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url);
+  }
   // 如果用户访问受保护路径但未登录，跳转到登录页
   if (!connectionStatus && protectedPaths.includes(pathname)) {
     const url = req.nextUrl.clone();

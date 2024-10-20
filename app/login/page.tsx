@@ -1,43 +1,42 @@
 // AuthPage.tsx
 "use client";
 
-import React,{useEffect}from "react";
+import React, { useEffect } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-import { useRouter } from 'next/navigation'; // 使用新的 navigation 包
-import { setConnectionStatus } from '@/config/wagmi/wagmiCookies';
-import { useSignMessage } from 'wagmi'
+import { useRouter } from 'next/navigation';
+import { setConnectionStatus, setIsAdminStatus } from '@/config/wagmi/wagmiCookies';
+import { useSignMessage } from 'wagmi';
+import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
+import { readContract } from '@wagmi/core';
 
 const AuthPage = React.memo(() => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
-  const account = useAccount();
   const { signMessage, isSuccess, isError, data, error } = useSignMessage();
-  // useEffect( () =>{
-  //   // 如果没有钱包，直接返回
-  //   if(!account) return;
-  //   (async()=>{
-  //     // const token =localStorage.getItem("token")
-  //     // if(token) return;
-  //     const signature = await signMessage(getConfig(), { message: 'hello world' })
-  //     console.log(signature)
-  //   })();
-  // },[account]);
-  
 
-  useEffect(()=> {
-    if (isConnected) {
+  useEffect(() => {
+    if (isConnected && address) {
       setConnectionStatus('connected');
-      (async()=>{
-        // const token =localStorage.getItem("token")
-        // if(token) return;
-        const signature= await signMessage({
+      readContract(config, {
+        address: ABIConfig.address,
+        abi: ABIConfig.abi,
+        functionName: 'getAdminStatus',
+        args: [address],
+      })
+        .then((result) => {
+          setIsAdminStatus(result);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+
+      (async () => {
+        const signature = signMessage({
           message: `hello world ${address}`,
-         })
-        //  localStorage.setItem('signature', signature)
-        console.log('signature', signature)
+        });
+        console.log('signature', signature);
       })();
-      // router.push('/');
     }
   }, [isConnected, address]);
 
@@ -58,9 +57,13 @@ const AuthPage = React.memo(() => {
     <>
       <div style={styles.pageBackground}>
         <div style={styles.container}>
+          <img src="../../static/vote_logo.png" alt="DVote Logo" style={styles.logo} />
           <h1 style={styles.title}>Welcome to DVote System</h1>
-          {/* <p style={styles.subtitle}>Secure and stylish login experience.</p> */}
-          <ConnectButton />
+          <p style={styles.subtitle}>A secure and decentralized voting system for the future.</p>
+          <ConnectButton showBalance={{
+              smallScreen: false,
+              largeScreen: false,
+            }} />
         </div>
       </div>
     </>
@@ -73,35 +76,42 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "center",
     alignItems: "center",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #667eea, #764ba2)",
+    background: "linear-gradient(135deg, #6D83F2, #856DFF)",
     backgroundSize: "200% 200%",
     animation: "gradient 15s ease infinite",
-    overflow: "hidden",
-    padding: "0 15px",
+    padding: "0 20px",
+  },
+  logo: {
+    width: "150px",
+    height: "auto",
+    marginBottom: "20px",
   },
   container: {
     width: "100%",
-    maxWidth: 450,
-    padding: "2rem",
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: "12px",
-    boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)",
+    maxWidth: 400,
+    padding: "2.5rem",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: "15px",
+    boxShadow: "0px 12px 35px rgba(0, 0, 0, 0.2)",
     textAlign: "center",
-    animation: "containerFadeIn 2s ease-out",
-    display: 'Flex',
-    justifyContent: 'center',
-    flexDirection: 'column',
-    alignItems: 'center'
+    display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
+    animation: "containerFadeIn 1.5s ease-out",
   },
   title: {
-    fontSize: "2rem",
+    fontSize: "2.5rem",
     color: "#333",
     margin: "0 0 1rem",
+    fontWeight: "bold",
   },
   subtitle: {
-    fontSize: "1rem",
-    color: "#666",
+    fontSize: "1.1rem",
+    color: "#555",
     marginBottom: "2rem",
+    maxWidth: "300px",
+    lineHeight: "1.5",
   },
 };
 

@@ -1,187 +1,177 @@
-"use client";
-import ConnectWallet from '@/components/wallet/connect'
-import Counter from './Counter';
-import { Provider } from 'react-redux';
-import store from '../store';
-import { Button, Col, Row, Statistic, Card, Tabs, Table, Modal, InputNumber } from 'antd';
-import { useState } from "react";
-import type { TableProps, TabsProps } from 'antd';
-// import LineChart from '@/components/LineChart';
-import LineChart from '../components/LineChart';
+'use client'; // 声明为客户端组件
+
+import React, { useState, useEffect } from 'react';
+import { Space, Table, Button, Modal, Input,Spin, message } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useRouter } from 'next/navigation'; // 使用新的 navigation 包
+// import readDvoteContract from '@/hooks/readContract'
+import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
+import { writeContract, getAccount, readContract, waitForTransactionReceipt } from '@wagmi/core'
+import {formatBigIntToDate} from '@/utils/formateDate';
 
 interface DataType {
-  key: string;
-  date: string;
-  num: number;
-  money: number;
-}
-interface DataType2 {
-  key: string;
-  candidater: string;
-  num: number;
-  money: number;
+  names: string;
+  ids: bigint;
+  startTimes: bigint;
+  endTimes: bigint;
 }
 
-export default function Home() {
-  const [currentTab, setCurrentTab] = useState('1')
+const ElectionList: React.FC = () => {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const showModal = (user:any) => {
-      setIsModalOpen(true);
-    };
-  
-  const handleOk = () => {
-  setIsModalOpen(false);
+  const [candidater, setCandidater] = useState('');
+  const { connector } = getAccount(config)
+  const [tableData, setTableData] =  useState<DataType[]>();
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const handleNavigate = (record: DataType) => {
+    router.push(`/candidateList?name=${record.names}&id=${record.ids}`);
   };
 
-  const handleCancel = () => {
-  setIsModalOpen(false);
-  };
+  // const tsst = readDvoteContract();
+  useEffect(()=> {
+    getElections();
+  }, [])
 
-
-  const columns: TableProps<DataType>['columns'] = [
+  const columns: ColumnsType<DataType> = [
     {
-      title: '日期',
-      dataIndex: 'date',
-      key: 'date',
+      title: 'ID',
+      dataIndex: 'ids',
+      key: 'ids',
+      render: (id: bigint) => <a>{Number(id)}</a>,
     },
     {
-      title: '投票数',
-      dataIndex: 'num',
-      key: 'num',
+      title: '选举名称',
+      dataIndex: 'names',
+      key: 'names',
       render: (text: string) => <a>{text}</a>,
     },
     {
-      title: '捐款金额',
-      dataIndex: 'money',
-      key: 'money',
-    },
-  ];
-  const columns2: TableProps<DataType2>['columns'] = [
-    {
-      title: '候选人',
-      dataIndex: 'candidater',
-      key: 'candidater',
+      title: '创建时间',
+      dataIndex: 'startTimes',
+      key: 'startTimes',
+      render:(startTimes: bigint)=> <span>{formatBigIntToDate(startTimes)}</span>
     },
     {
-      title: '总投票数',
-      dataIndex: 'num',
-      key: 'num'
+      title: '结束时间',
+      dataIndex: 'endTimes',
+      key: 'endTimes',
+      render:(endTimes: bigint)=> <span>{formatBigIntToDate(endTimes)}</span>
     },
     {
-      title: '总捐款金额',
-      dataIndex: 'money',
-      key: 'money',
+      title: '操作',
+      key: 'action',
+      render: (_, record: DataType) => (
+        <Space size="middle">
+          <Button type="primary" onClick={() => handleNavigate(record)}>
+            详情
+          </Button>
+          <Button danger={true}>删除</Button>
+        </Space>
+      ),
     },
   ];
   
-  const data: DataType[] = [
-    {
-      key: '1',
-      date: '2024-10-2',
-      num: 32,
-      money: 667
-    },
-    {
-      key: '2',
-      date: '2024-10-2',
-      num: 12,
-      money: 1667
-    },
-    {
-      key: '3',
-      date: '2024-10-2',
-      num: 3442,
-      money: 6267
-    },
-  ];
-  const data2: DataType2[] = [
-    {
-      key: '1',
-      candidater: '韩立',
-      num: 32,
-      money: 667
-    },
-    {
-      key: '2',
-      candidater: '王林',
-      num: 32,
-      money: 1667
-    },
-    {
-      key: '3',
-      candidater: '陈平安',
-      num: 3442,
-      money: 6267
-    },
-  ];
-
-  const onChange = (key: string) => {
-    console.log(key);
-    setCurrentTab(key)
+  const getElections = ()=> {
+    readContract(config, {
+      address: ABIConfig.address,
+      abi: ABIConfig.abi,
+      functionName: 'getAllElections',
+      args: [], 
+    }).then((result) => {
+       // 类型断言 result 为我们期望的结构
+      const typedResult = result as [bigint[], string[], bigint[], bigint[]];
+      const res: Array<{ ids: bigint, names: string, startTimes: bigint, endTimes: bigint }> = [];
+  
+      if (result) {
+        const length = typedResult[0].length;
+    
+        for (let i = 0; i < length; i++) {
+          res.push({
+            ids: typedResult[0][i], 
+            names: typedResult[1][i],
+            startTimes: typedResult[2][i],
+            endTimes: typedResult[3][i]
+          });
+        }
+        setTableData(res)
+      }
+    })
+    .catch((error) => {
+        console.error("Error:", error);
+    });
+  }
+  const showModal = async() => {
+    setIsModalOpen(true);
   };
-  
-  const items: TabsProps['items'] = [
-    {
-      key: '1',
-      label: '我的数据',
-    },
-    {
-      key: '2',
-      label: '竞争对手数据',
-    },
-  ];
+  const handleOk = async() => {
+    setIsModalOpen(false);
+    setLoading(true);
+    try {
+      writeContract(config,
+        {
+          address: ABIConfig.address,
+          abi: ABIConfig.abi,
+          functionName: 'createElection',
+          args: [
+            candidater,
+            BigInt(300000),
+          ],
+          connector
+        },
+      ).then((TXHash) => {
+        console.log('新建完成，', TXHash);
+        waitForTransactionReceipt(config, {
+          hash: TXHash,
+        }).then((result) => {
+          console.log('waitForTransactionReceipt', result);
+          if (result.status == 'success') {
+            setLoading(false);
+            getElections();
+          }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+        });
+      })
+      .catch((error) => {
+          setLoading(false);
+          message.error(`创建失败${error}`)
+          console.error("Error:", error);
+      });
+    } catch (error) {
+      console.error("Contract Write Error:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+
   return (
     <>
-      <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
-      {currentTab === '1' ? 
-      (
-      <>
-        <Card title="我的投票和捐款数">
-          <Row gutter={16}>
-              <Col span={12}>
-                <Statistic title="总投票数" value={112893} />
-              </Col>
-              <Col span={12}>
-                <Statistic title="总捐款金额" value={112893} precision={2} />
-                <Button style={{ marginTop: 16 }} type="primary" onClick={showModal}>
-                  提款
-                </Button>
-              </Col>
-          </Row>
-        </Card>
-        <h2 style={{padding: '20px 0', fontSize: '16px', fontWeight: 'bold'}}>每天投票和捐款统计</h2>
-        <Table<DataType> columns={columns} dataSource={data} />
-        <LineChart />
-        <Modal 
-          title="提款"
-          centered={true} 
-          okText="确认提款" 
-          cancelText="取消"
-          open={isModalOpen}
-          width={320} 
-          onOk={handleOk} 
-          onCancel={handleCancel}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-              <span style={{width: '80px'}}>捐款金额:</span>
-              <InputNumber suffix="wei" style={{ width: '100%' }} />
-          </div>
-        </Modal>
-
-      </>
-      ) :
-      (
-        <>
-        <h2 style={{padding: '20px 0', fontSize: '16px', fontWeight: 'bold'}}>投票和捐款数据</h2>
-        <Table<DataType2> columns={columns2} dataSource={data2} />
-          <ConnectWallet />
-          <Provider store={store}>
-            <Counter/>
-          </Provider>
-        </>
-      )
-    }
-    
+      <Spin spinning={loading} tip="正在在交互中，请耐心等待..." percent='auto'>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <h1 className="TableTitle">选举列表</h1>
+          <Button type="primary" onClick={showModal}>创建选举</Button>
+        </div>
+        <Table<DataType> columns={columns} dataSource={tableData} />
+      </Spin>
+      <Modal 
+        title="创建新选举"
+        centered={true}
+        okText="创建选举"
+        cancelText="取消"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ width: '100px' }}>新选举名称:</span>
+          <Input placeholder="请输入选举名称" value={candidater} onChange={(e) => setCandidater(e.target.value)} />
+        </div>
+      </Modal>
     </>
-  )
+  );
 }
+
+export default ElectionList;
