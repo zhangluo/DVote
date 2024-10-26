@@ -14,7 +14,7 @@ interface ABIConfigType {
 }
 
 const ABIConfig: ABIConfigType = {
-  address: '0x2b539555912ff9f025a16279984ca01eb2a863e0',
+  address: '0x30380246b8e09551665395f9bb31a796d565061d',
   abi,
 };
 

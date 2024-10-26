@@ -1,11 +1,16 @@
 // AuthPage.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { setConnectionStatus, setIsAdminStatus } from '@/config/wagmi/wagmiCookies';
+import { 
+  setConnectionStatus,
+  setIsAdminStatus,
+  setIsCanditdateStatus,
+  setIsSuperAdminStatus
+} from '@/config/wagmi/wagmiCookies';
 import { useSignMessage } from 'wagmi';
 import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
 import { readContract } from '@wagmi/core';
@@ -14,23 +19,16 @@ const AuthPage = React.memo(() => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const { signMessage, isSuccess, isError, data, error } = useSignMessage();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(false); // 是否为管理员
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(false); // 是否为超级管理员
+  const [isCandidate, setIsCandidate] = useState<boolean | null>(false); // 是否为候选人
 
   useEffect(() => {
     if (isConnected && address) {
       setConnectionStatus('connected');
-      readContract(config, {
-        address: ABIConfig.address,
-        abi: ABIConfig.abi,
-        functionName: 'getAdminStatus',
-        args: [address],
-      })
-        .then((result) => {
-          setIsAdminStatus(result);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
-
+      checkIsAdmin(address);
+      checkIsSuperAdmin(address);
+      checkIsCandidator(address);
       (async () => {
         const signature = signMessage({
           message: `hello world ${address}`,
@@ -40,10 +38,66 @@ const AuthPage = React.memo(() => {
     }
   }, [isConnected, address]);
 
+
+  const checkIsSuperAdmin = (address: string) => {
+    readContract(config, {
+      address: ABIConfig.address,
+      abi: ABIConfig.abi,
+      functionName: 'owner',
+      args: [],
+    }).then((result) => {
+      const isSuper = address == result;
+      setIsSuperAdminStatus(isSuper);
+      setIsSuperAdmin(isSuper)
+    }).catch((error) => {
+      console.error("Error:", error);
+    });
+  }
+
+  const checkIsAdmin = (address: string) => {
+    readContract(config, {
+      address: ABIConfig.address,
+      abi: ABIConfig.abi,
+      functionName: 'checkAdminByAddr',
+      args: [[address]],
+    }).then((result) => {
+      const isRes = result as boolean;
+      setIsAdminStatus(isRes);
+      setIsAdmin(isRes)
+    }).catch((error) => {
+      console.error("Error:", error);
+    });
+  }
+
+  const checkIsCandidator = (address: string) => {
+    readContract(config, {
+      address: ABIConfig.address,
+      abi: ABIConfig.abi,
+      functionName: 'checkIsCandidator',
+      args: [address],
+    }).then((result) => {
+      const isResult = result as boolean;
+      setIsCanditdateStatus(isResult);
+      setIsCandidate(isResult)
+    }).catch((error) => {
+      console.error("Error:", error);
+    });
+  }
+  // 默认调整路由
+  let forwardUrl = '/'
+  if (isSuperAdmin || isAdmin) {
+    forwardUrl = '/'
+  } else {
+    if (isCandidate) {
+      forwardUrl = '/candidateInfo'
+    } else {
+      forwardUrl = '/allCandidates'
+    }
+  }
   useEffect(() => {
     if (isSuccess && data) {
       console.log('Signature successful:', data);
-      router.push('/');
+      router.push(forwardUrl);
     }
   }, [isSuccess, data]);
 

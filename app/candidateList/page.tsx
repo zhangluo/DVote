@@ -8,16 +8,19 @@ import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
 import { writeContract, getAccount, readContract, waitForTransactionReceipt } from '@wagmi/core';
 
 interface DataType {
-  ids: bigint;
-  names: string;
-  descriptions: string;
-  imageUrls: string;
-  voteCounts: bigint;
-  donationAmounts: bigint;
+  id: bigint;
+  name: string;
+  description: string;
+  imageUrl: string;
+  voteCount: bigint;
+  donationAmount: bigint;
+  candidateAddress: string;
+  isValid: boolean;
 }
 
 type FieldType = {
   username?: string;
+  addr?: string;
   desc?: string;
 };
 
@@ -50,24 +53,8 @@ export default function Home() {
         BigInt(Number(electionId))
       ]
     },).then((result) => {
-      const typedResult = result as [bigint[], string[], string[],string[],bigint[], bigint[]];
-      const res: Array<{ ids: bigint, names: string, descriptions: string, imageUrls: string,voteCounts: bigint, donationAmounts: bigint }> = [];
-      if (result) {
-        console.log(result)
-        const length = typedResult[0].length;
-        for (let i = 0; i < length; i++) {
-          res.push({
-            ids: typedResult[0][i], 
-            names: typedResult[1][i],
-            descriptions: typedResult[2][i],
-            imageUrls: typedResult[3][i],
-            voteCounts: typedResult[4][i],
-            donationAmounts: typedResult[5][i],
-          });
-        }
-        console.log(res);
-        setTableData(res)
-      }
+      const res = result as DataType[];
+      setTableData(res);
     })
     .catch((error) => {
         console.error("Error:", error); // 错误处理
@@ -79,8 +66,7 @@ export default function Home() {
       const values = await form.validateFields();
       setIsModalOpen(false);
       setLoading(true);
-      console.log(address)
-      if (address) {
+      if (values) {
         try {
           writeContract(config,
             {
@@ -92,12 +78,11 @@ export default function Home() {
                 values.username,
                 values.desc,
                 '',
-                address
+                values.addr
               ],
               connector
             },
           ).then((TXHash) => {
-            console.log('新建完成，', TXHash);
             waitForTransactionReceipt(config, {
               hash: TXHash,
             }).then((result) => {
@@ -130,9 +115,8 @@ export default function Home() {
     form.resetFields();
   };
 
-  const doVote = (id: any) => {
+  const doVote = (addr: string) => {
     try {
-      console.log(id)
       setLoading(true);
       writeContract(config,{
         address: ABIConfig.address,
@@ -140,14 +124,13 @@ export default function Home() {
         functionName: 'vote',
         args: [
           BigInt(Number(electionId)),
-          id,
+          addr,
         ],
         connector
       }).then((TXHash) => {
         waitForTransactionReceipt(config, {
           hash: TXHash,
         }).then((result) => {
-          console.log('waitForTransactionReceipt', result);
           if (result.status == 'success') {
             setLoading(false)
             message.success('投票成功!');
@@ -173,8 +156,8 @@ export default function Home() {
     setIsModalOpen(true);
     if (type === 'edit' && record) {
       form.setFieldsValue({
-        username: record.names,
-        desc: record.descriptions,
+        username: record.name,
+        desc: record.description,
       });
       setCurrentRecord(record);
     } else {
@@ -195,7 +178,6 @@ export default function Home() {
     setDonateValue(0);
   }
   const handleDonateChange = (value: number | null) => {
-    console.log(value);
     if (value !== null) {
     setDonateValue(value);
     } else {
@@ -204,38 +186,40 @@ export default function Home() {
   }
   const handleDonate = () => {
     try {
-      setLoading(true);
-      CancelDonate();
-      writeContract(config,{
-        address: ABIConfig.address,
-        abi: ABIConfig.abi,
-        functionName: 'donate',
-        args: [
-          BigInt(Number(electionId)),
-          BigInt(Number(currentRecord?.ids))
-        ],
-        value: BigInt(donateValue), 
-        connector
-      }).then((TXHash) => {
-        waitForTransactionReceipt(config, {
-          hash: TXHash,
-        }).then((result) => {
-          console.log('waitForTransactionReceipt', result);
-          if (result.status == 'success') {
-            setLoading(false)
-            message.success('捐款成功!');
-            getCandidateList();
-          }
+      if (currentRecord) {
+        setLoading(true);
+        CancelDonate();
+        writeContract(config,{
+          address: ABIConfig.address,
+          abi: ABIConfig.abi,
+          functionName: 'donate',
+          args: [
+            BigInt(Number(electionId)),
+            currentRecord.candidateAddress
+          ],
+          value: BigInt(donateValue), 
+          connector
+        }).then((TXHash) => {
+          waitForTransactionReceipt(config, {
+            hash: TXHash,
+          }).then((result) => {
+            if (result.status == 'success') {
+              setLoading(false)
+              message.success('捐款成功!');
+              getCandidateList();
+            }
+          })
+          .catch((error) => {
+              console.error("error:", error); // 错误处理
+          });
         })
         .catch((error) => {
-            console.error("error:", error); // 错误处理
+            console.error("Error:", error); // 错误处理
+            setLoading(false);
+            message.error(`捐款失败:${error}`);
         });
-      })
-      .catch((error) => {
-          console.error("Error:", error); // 错误处理
-          setLoading(false);
-          message.error(`捐款失败:${error}`);
-      });
+      }
+      
     } catch (error) {
       console.error("Contract Write Error:", error);
     }
@@ -244,31 +228,36 @@ export default function Home() {
   const columns: TableProps<DataType>['columns'] = [
     {
       title: 'ID',
-      dataIndex: 'ids',
-      key: 'ids',
+      dataIndex: 'id',
+      key: 'id',
       render: (id: bigint) => <a>{Number(id)}</a>,
     },
     {
       title: '候选人',
-      dataIndex: 'names',
-      key: 'names',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: '地址',
+      dataIndex: 'candidateAddress',
+      key: 'candidateAddress',
     },
     {
       title: '描述',
-      dataIndex: 'descriptions',
-      key: 'descriptions',
+      dataIndex: 'description',
+      key: 'description',
     },
     {
       title: '投票数',
-      dataIndex: 'voteCounts',
-      key: 'voteCounts',
-      render:(voteCounts: bigint)=> <span>{Number(voteCounts)}</span>
+      dataIndex: 'voteCount',
+      key: 'voteCount',
+      render:(voteCount: bigint)=> <span>{Number(voteCount)}</span>
     },
     {
       title: '捐款数(Wei)',
-      dataIndex: 'donationAmounts',
-      key: 'donationAmounts',
-      render:(donationAmounts: bigint)=> <span>{Number(donationAmounts)}</span>
+      dataIndex: 'donationAmount',
+      key: 'donationAmount',
+      render:(donationAmount: bigint)=> <span>{Number(donationAmount)}</span>
     },
     {
       title: '操作',
@@ -276,7 +265,7 @@ export default function Home() {
       render: (_, record: DataType) => (
         <Space size="middle">
           {/* <Button size="small" type="primary" onClick={() => showModal('edit', record)}>编辑</Button> */}
-          <Button type="primary" onClick={() => doVote(record.ids)}>投票</Button>
+          <Button type="primary" onClick={() => doVote(record.candidateAddress)}>投票</Button>
           <Button type="primary" className="bg-green-500 hover:!bg-green-600" onClick={() => showDonateModal(record)}>捐款</Button>
         </Space>
       ),
@@ -329,6 +318,13 @@ export default function Home() {
             >
               <Input />
             </Form.Item>
+            <Form.Item<FieldType>
+              label="地址"
+              name="addr"
+              rules={[{ required: true, message: '请输入钱包地址' }]}
+            >
+              <Input />
+            </Form.Item>
             <Form.Item label="头像" valuePropName="fileList" getValueFromEvent={normFile}>
               <Upload action="/upload.do" listType="picture-card">
                 <button style={{ border: 0, background: 'none' }} type="button">
@@ -344,7 +340,7 @@ export default function Home() {
         </Modal>
 
         <Modal 
-          title={'捐款给候选人：' + currentRecord?.names} 
+          title={'捐款给候选人：' + currentRecord?.name} 
           centered={true} 
           okText="确认捐款" 
           cancelText="取消"

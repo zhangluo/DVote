@@ -65,9 +65,9 @@ export const abi = [
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "candidateId",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "_candidatorAddr",
+				"type": "address"
 			},
 			{
 				"indexed": false,
@@ -127,9 +127,9 @@ export const abi = [
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "candidateId",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "candidateAddr",
+				"type": "address"
 			}
 		],
 		"name": "Voted",
@@ -210,7 +210,7 @@ export const abi = [
 		"inputs": [
 			{
 				"internalType": "address[]",
-				"name": "_addrs",
+				"name": "_addr",
 				"type": "address[]"
 			}
 		],
@@ -270,9 +270,9 @@ export const abi = [
 				"type": "uint256"
 			},
 			{
-				"internalType": "uint256",
-				"name": "_candidatorId",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "_candidatorAddr",
+				"type": "address"
 			}
 		],
 		"name": "donate",
@@ -332,6 +332,80 @@ export const abi = [
 				"internalType": "bool",
 				"name": "isValid",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "getAdminStatus",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "_isAdmin",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getAllCandidatorsByElection",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "description",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "imageUrl",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "voteCount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "donationAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address payable",
+						"name": "candidateAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "isValid",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct DVote.Candidate[]",
+				"name": "candidates",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
@@ -427,6 +501,89 @@ export const abi = [
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "electionId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_candidatorId",
+				"type": "uint256"
+			}
+		],
+		"name": "getCandidatorInfo",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_electionId",
+				"type": "uint256"
+			}
+		],
+		"name": "getElectionInfo",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "owner",
 		"outputs": [
@@ -478,9 +635,9 @@ export const abi = [
 				"type": "uint256"
 			},
 			{
-				"internalType": "uint256",
-				"name": "_candidatorId",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "_candidatorAddr",
+				"type": "address"
 			}
 		],
 		"name": "vote",

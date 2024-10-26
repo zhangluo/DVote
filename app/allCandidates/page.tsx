@@ -7,17 +7,6 @@ import { config, ABIConfig } from "@/config/wagmi/wagmiConfig";
 import { writeContract, getAccount, readContract, waitForTransactionReceipt } from '@wagmi/core';
 import "./list.scss";
 
-interface ListType {
-  ids: bigint;
-  names: string;
-  imageUrls: string;
-  voteCounts: bigint;
-  donationAmounts: bigint;
-  isValids: boolean;
-  candidateAddresses: string;
-  electionIds: bigint;
-}
-
 const App: React.FC = () => {
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [candidateList, setCandidateList] = useState<ListType[]>([]);
@@ -28,10 +17,21 @@ const App: React.FC = () => {
   const { connector } = getAccount(config);
 
   useEffect(() => {
-    getCandidateList();
+    getALLCandidateList();
   }, []);
 
-  const getCandidateList = () => {
+  type ListType = {
+    id: bigint;
+    name: string;
+    description: string;
+    imageUrl: string;
+    voteCount: bigint;
+    donationAmount: bigint;
+    candidateAddress: string;
+    isValid: boolean;
+  };
+
+  const getALLCandidateList = () => {
     readContract(config, {
       address: ABIConfig.address,
       abi: ABIConfig.abi,
@@ -39,36 +39,12 @@ const App: React.FC = () => {
       args: [],
     })
       .then((result) => {
-        const typedResult = result as [
-          bigint[],
-          string[],
-          string[],
-          bigint[],
-          bigint[],
-          boolean[],
-          string[],
-          bigint[],
-        ];
-        const res: Array<ListType> = [];
-        if (result) {
-          const length = typedResult[0].length;
-          for (let i = 0; i < length; i++) {
-            res.push({
-              ids: typedResult[0][i],
-              names: typedResult[1][i],
-              imageUrls: typedResult[2][i],
-              voteCounts: typedResult[3][i],
-              donationAmounts: typedResult[4][i],
-              isValids: typedResult[5][i],
-              candidateAddresses: typedResult[6][i],
-              electionIds: typedResult[7][i],
-            });
-          }
-          setCandidateList(res);
-        }
+        console.log(result)
+        const res = result as ListType[];
+        setCandidateList(res); 
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Errorsss:", error);
       });
   };
 
@@ -76,10 +52,10 @@ const App: React.FC = () => {
     let sortedList = [...candidateList];
     if (value === "1") {
       // 按投票数降序排序
-      sortedList.sort((a, b) => Number(b.voteCounts) - Number(a.voteCounts));
+      sortedList.sort((a, b) => Number(b.voteCount) - Number(a.voteCount));
     } else if (value === "2") {
       // 按捐款数降序排序
-      sortedList.sort((a, b) => Number(b.donationAmounts) - Number(a.donationAmounts));
+      sortedList.sort((a, b) => Number(b.donationAmount) - Number(a.donationAmount));
     }
     setCandidateList(sortedList); // 更新候选人列表
   };
@@ -107,76 +83,78 @@ const App: React.FC = () => {
 
   const handleDonate = () => {
     try {
-      setLoading(true);
-      CancelDonate();
-      writeContract(config,{
-        address: ABIConfig.address,
-        abi: ABIConfig.abi,
-        functionName: 'donate',
-        args: [
-          BigInt(Number(currentCandidate?.electionIds)),
-          BigInt(Number(currentCandidate?.ids))
-        ],
-        value: BigInt(donateValue), 
-        connector
-      }).then((TXHash) => {
-        waitForTransactionReceipt(config, {
-          hash: TXHash,
-        }).then((result) => {
-          if (result.status == 'success') {
-            setLoading(false)
-            message.success('捐款成功!');
-            getCandidateList();
-          }
+      if (currentCandidate) {
+        setLoading(true);
+        CancelDonate();
+        writeContract(config,{
+          address: ABIConfig.address,
+          abi: ABIConfig.abi,
+          functionName: 'donate',
+          args: [
+            BigInt(Number(currentCandidate?.id)),
+            currentCandidate.candidateAddress
+          ],
+          value: BigInt(donateValue), 
+          connector
+        }).then((TXHash) => {
+          waitForTransactionReceipt(config, {
+            hash: TXHash,
+          }).then((result) => {
+            if (result.status == 'success') {
+              setLoading(false)
+              message.success('捐款成功!');
+              getALLCandidateList();
+            }
+          })
+          .catch((error) => {
+              console.error("error:", error); // 错误处理
+          });
         })
         .catch((error) => {
-            console.error("error:", error); // 错误处理
+            console.error("Error:", error); // 错误处理
+            setLoading(false);
+            message.error(`捐款失败:${error}`);
         });
-      })
-      .catch((error) => {
-          console.error("Error:", error); // 错误处理
-          setLoading(false);
-          message.error(`捐款失败:${error}`);
-      });
+      }
+      
     } catch (error) {
       console.error("Contract Write Error:", error);
     }
   }
 
   const doVote = (record?: ListType) => {
-    if (record) {
-      setCurrentCandidate(record);
-    }
     try {
-      setLoading(true);
-      writeContract(config,{
-        address: ABIConfig.address,
-        abi: ABIConfig.abi,
-        functionName: 'vote',
-        args: [
-          BigInt(Number(currentCandidate?.electionIds)),
-          BigInt(Number(currentCandidate?.ids))
-        ],
-        connector
-      }).then((TXHash) => {
-        waitForTransactionReceipt(config, {
-          hash: TXHash,
-        }).then((result) => {
-          if (result.status == 'success') {
-            setLoading(false)
-            message.success('投票成功!');
-            getCandidateList();
-          }
+      if (record) {
+        setLoading(true);
+        writeContract(config,{
+          address: ABIConfig.address,
+          abi: ABIConfig.abi,
+          functionName: 'vote',
+          args: [
+            BigInt(Number(record?.id)),
+            record?.candidateAddress
+          ],
+          connector
+        }).then((TXHash) => {
+          waitForTransactionReceipt(config, {
+            hash: TXHash,
+          }).then((result) => {
+            if (result.status == 'success') {
+              setLoading(false)
+              message.success('投票成功!');
+              getALLCandidateList();
+            }
+          })
+          .catch((error) => {
+              console.error("error:", error); // 错误处理
+          });
         })
         .catch((error) => {
-            console.error("error:", error); // 错误处理
+            console.error("Error:", error); // 错误处理
+            setLoading(false);
+            message.error('您已投票，请勿重复投票!');
         });
-      })
-      .catch((error) => {
-          console.error("Error:", error); // 错误处理
-          setLoading(false);
-          message.error('您已投票，请勿重复投票!');
-      });
+      }
     } catch (error) {
       console.error("Contract Write Error:", error);
     }
@@ -201,17 +179,17 @@ const App: React.FC = () => {
           </div>
 
           {/* 动态渲染候选人列表 */}
-          {candidateList.map((candidate) => (
-            <Card key={candidate.ids.toString()} title={`候选人：${candidate.names}`}>
+          {candidateList.map((candidate,idx) => (
+            <Card key={candidate.candidateAddress.toString() + idx} title={`候选人：${candidate.name}`}>
               <div className="candidate-info-wraps">
                 <Avatar
                   size="large"
                   src="https://api.dicebear.com/7.x/miniavs/svg?seed=1"
                 />
                 <div className="infos">
-                  <p>选举ID {candidate.electionIds}</p>
-                  <p>投票数： {candidate.voteCounts.toString()}</p>
-                  <p>捐款数： {candidate.donationAmounts.toString()} wei</p>
+                  <p>地址:  {candidate.candidateAddress.toString()}</p>
+                  <p>投票数： {candidate.voteCount.toString()}</p>
+                  <p>捐款数： {candidate.donationAmount.toString()} wei</p>
                 </div>
                 <div className="actions">
                   <Button type="primary" onClick={() => doVote(candidate)}>投票</Button>
@@ -229,7 +207,7 @@ const App: React.FC = () => {
 
           {/* 捐款模态框 */}
           <Modal 
-            title={'捐款给候选人：' + currentCandidate?.names} 
+            title={'捐款给候选人：' + currentCandidate?.name} 
             centered={true} 
             okText="确认捐款" 
             cancelText="取消"

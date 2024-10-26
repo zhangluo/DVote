@@ -78,6 +78,7 @@ const ElectionList: React.FC = () => {
       functionName: 'getAllElections',
       args: [], 
     }).then((result) => {
+      console.log(1111, result)
        // 类型断言 result 为我们期望的结构
       const typedResult = result as [bigint[], string[], bigint[], bigint[]];
       const res: Array<{ ids: bigint, names: string, startTimes: bigint, endTimes: bigint }> = [];
@@ -97,7 +98,7 @@ const ElectionList: React.FC = () => {
       }
     })
     .catch((error) => {
-        console.error("Error:", error);
+        console.error("Errorssss:", error);
     });
   }
   const showModal = async() => {
@@ -119,11 +120,9 @@ const ElectionList: React.FC = () => {
           connector
         },
       ).then((TXHash) => {
-        console.log('新建完成，', TXHash);
         waitForTransactionReceipt(config, {
           hash: TXHash,
         }).then((result) => {
-          console.log('waitForTransactionReceipt', result);
           if (result.status == 'success') {
             setLoading(false);
             getElections();
