@@ -4,7 +4,7 @@ import { Table, Space, Button, Modal, Form, Input, Upload, message, Spin, InputN
 import type { TableProps } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
+import { config, ABIConfig, ABITokenConfig} from '@/config/wagmi/wagmiConfig';
 import { writeContract, getAccount, readContract, waitForTransactionReceipt } from '@wagmi/core';
 
 interface DataType {
@@ -54,6 +54,8 @@ export default function Home() {
       ]
     },).then((result) => {
       const res = result as DataType[];
+      console.log(result)
+      console.log(res)
       setTableData(res);
     })
     .catch((error) => {
@@ -184,29 +186,63 @@ export default function Home() {
       setDonateValue(0);
     }
   }
+  const doDOnate = (addr: string) => {
+    if (currentRecord) {
+      console.log(addr,ABIConfig )
+      writeContract(config,{
+        address: ABIConfig.address,
+        abi: ABIConfig.abi,
+        functionName: 'donate',
+        args: [
+          BigInt(Number(electionId)),
+          addr,
+          BigInt(donateValue)
+        ],
+        connector
+      }).then((TXHash) => {
+        waitForTransactionReceipt(config, {
+          hash: TXHash,
+        }).then((result) => {
+          if (result.status == 'success') {
+            setLoading(false)
+            message.success('捐款成功!');
+            getCandidateList();
+          }
+        })
+        .catch((error) => {
+            console.error("error:", error); // 错误处理
+        });
+      })
+      .catch((error) => {
+          console.error("Error:", error); // 错误处理
+          setLoading(false);
+          message.error(`捐款失败`);
+      });
+    }
+  }
+
   const handleDonate = () => {
     try {
       if (currentRecord) {
         setLoading(true);
         CancelDonate();
+        const _addr = currentRecord.candidateAddress;
         writeContract(config,{
-          address: ABIConfig.address,
-          abi: ABIConfig.abi,
-          functionName: 'donate',
+          address: ABITokenConfig.address,
+          abi: ABITokenConfig.abi,
+          functionName: 'approve',
           args: [
-            BigInt(Number(electionId)),
-            currentRecord.candidateAddress
+            ABIConfig.address,
+            BigInt(donateValue)
           ],
-          value: BigInt(donateValue), 
           connector
         }).then((TXHash) => {
           waitForTransactionReceipt(config, {
             hash: TXHash,
           }).then((result) => {
+            console.log(111111, result)
             if (result.status == 'success') {
-              setLoading(false)
-              message.success('捐款成功!');
-              getCandidateList();
+              doDOnate(_addr);
             }
           })
           .catch((error) => {
@@ -216,10 +252,9 @@ export default function Home() {
         .catch((error) => {
             console.error("Error:", error); // 错误处理
             setLoading(false);
-            message.error(`捐款失败:${error}`);
+            message.error(`捐款失败2222222:${error}`);
         });
       }
-      
     } catch (error) {
       console.error("Contract Write Error:", error);
     }
