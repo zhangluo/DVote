@@ -13,7 +13,6 @@ interface ABIConfigType {
   address: `0x${string}`;
   abi: readonly any[];
 }
-// old = '0x30380246b8e09551665395f9bb31a796d565061d'
 const ABIConfig: ABIConfigType = {
   address: '0xB671Ba4A1F7fDd82E183F85eDaBD1ed193264e61',
   abi,

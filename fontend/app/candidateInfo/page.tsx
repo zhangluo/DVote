@@ -1,36 +1,52 @@
 "use client";
-import { Button, Col, Row, Statistic, Card, Tabs, Table, Modal, InputNumber, Select } from 'antd';
-import { useState,useEffect } from "react";
+import { Button, Col, Row, Statistic, Card, Tabs, Table, Modal, InputNumber, Select,Spin,message } from 'antd';
+import { useState,useEffect, SetStateAction } from "react";
 import type { TableProps, TabsProps } from 'antd';
 // import LineChart from '@/components/LineChart';
 import LineChart from '@/components/LineChart';
-
+import { useAccount } from 'wagmi';
 import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
 import { writeContract, getAccount, readContract, waitForTransactionReceipt } from '@wagmi/core'
 
 interface DataType {
-  key: string;
   date: string;
   num: number;
   money: number;
 }
 
 interface DataType2 {
-  key: string;
-  candidater: string;
-  num: number;
-  money: number;
+  id: BigInt;
+  name: string;
+  donationAmount: BigInt;
+  voteCount: BigInt;
 }
 interface selctOptions {
   label: string;
   value: number;
 }
+interface DataType3 {
+  id: bigint;
+  name: string;
+  description: string;
+  imageUrl: string;
+  voteCount: bigint;
+  donationAmount: bigint;
+  candidateAddress: string;
+  isValid: boolean;
+}
+
 export default function CandidateInfo() {
   const [currentTab, setCurrentTab] = useState('1')
-  const [currentElection, setCurrentElection] = useState(1)
+  const [currentElection, setCurrentElection] = useState(BigInt(1))
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [electionList, setElectionList] =  useState<selctOptions[]>();
+  const [myData, setMyData] =  useState<DataType3>();
+  const [competitorsData, setCompetitorsData] =  useState<DataType2[]>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const { address } = useAccount();
+  const [donateValue, setDonateValue] = useState(0);
 
+  const { connector } = getAccount(config);
   const showModal = (user:any) => {
     setIsModalOpen(true);
   };
@@ -39,6 +55,10 @@ export default function CandidateInfo() {
     getElections();
   }, [])
 
+  useEffect(()=> {
+    getCandidateList();
+  }, [currentElection])
+
   const getElections = ()=> {
     readContract(config, {
       address: ABIConfig.address,
@@ -46,8 +66,7 @@ export default function CandidateInfo() {
       functionName: 'getAllElections',
       args: [], 
     }).then((result) => {
-      console.log(1111, result)
-        // 类型断言 result 为我们期望的结构
+        // 类型断言 result 为期望的结构
       const typedResult = result as [bigint[], string[], bigint[], bigint[]];
       const res: Array<{ value: number, label: string }> = [];
   
@@ -60,20 +79,87 @@ export default function CandidateInfo() {
             label: typedResult[1][i]
           });
         }
-        setCurrentElection(res[0].value)
+        setCurrentElection(BigInt(res[0].value))
         setElectionList(res)
       }
     })
     .catch((error) => {
-        console.error("Errorssss:", error);
+        console.error("Errors:", error);
     });
   }
+  const getCandidateList= () => {
+    readContract(config, {
+      address: ABIConfig.address,
+      abi: ABIConfig.abi,
+      functionName: 'getCandidates',
+      args: [
+        currentElection
+      ]
+    },).then((result) => {
+      const res = result as DataType3[];
+      const competitors_data: SetStateAction<DataType2[] | undefined> = [];
+      console.log(res)
+      setMyData(undefined) // 重置myData数据
+      res.forEach(item => {
+        if (item.candidateAddress == address) {
+          setMyData(item)
+          console.log(myData)
+        } else {
+          const {id,name,voteCount,donationAmount} = item;
+          competitors_data.push({id, name, voteCount, donationAmount})
+        }
+      })
+      setCompetitorsData(competitors_data);
+    })
+    .catch((error) => {
+        console.error("Error:", error); // 错误处理
+    });
+  }
+  const doWithDraw = () => {
+    writeContract(config,{
+      address: ABIConfig.address,
+      abi: ABIConfig.abi,
+      functionName: 'withdraw',
+      args: [
+        currentElection,
+        BigInt(donateValue)
+      ],
+      connector
+    }).then((TXHash) => {
+      waitForTransactionReceipt(config, {
+        hash: TXHash,
+      }).then((result) => {
+        if (result.status == 'success') {
+          setLoading(false)
+          message.success('提款成功!');
+          getCandidateList();
+        }
+      })
+      .catch((error) => {
+          console.error("error:", error); // 错误处理
+      });
+    })
+    .catch((error) => {
+        console.error("Error:", error); // 错误处理
+        setLoading(false);
+        message.error(`提款失败`);
+    });
+  }
+  const handleDonateChange = (value: number | null) => {
+    if (value !== null) {
+    setDonateValue(value);
+    } else {
+      setDonateValue(0);
+    }
+  }
   const handleOk = () => {
-  setIsModalOpen(false);
+    setIsModalOpen(false);
+    setLoading(true);
+    doWithDraw();
   };
 
   const handleCancel = () => {
-  setIsModalOpen(false);
+    setIsModalOpen(false);
   };
 
 
@@ -97,58 +183,43 @@ export default function CandidateInfo() {
   ];
   const columns2: TableProps<DataType2>['columns'] = [
     {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (id: bigint) => <a>{Number(id)}</a>,
+    },
+    {
       title: '候选人',
-      dataIndex: 'candidater',
-      key: 'candidater',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: '总投票数',
-      dataIndex: 'num',
-      key: 'num'
+      title: '投票数',
+      dataIndex: 'voteCount',
+      key: 'voteCount',
+      render:(voteCount: bigint)=> <span>{Number(voteCount)}</span>
     },
     {
-      title: '总捐款金额',
-      dataIndex: 'money',
-      key: 'money',
+      title: '捐款数(Wei)',
+      dataIndex: 'donationAmount',
+      key: 'donationAmount',
+      render:(donationAmount: bigint)=> <span>{Number(donationAmount)}</span>
     },
   ];
   
   const data: DataType[] = [
     {
-      key: '1',
       date: '2024-10-2',
       num: 32,
       money: 667
     },
     {
-      key: '2',
       date: '2024-10-2',
       num: 12,
       money: 1667
     },
     {
-      key: '3',
       date: '2024-10-2',
-      num: 3442,
-      money: 6267
-    },
-  ];
-  const data2: DataType2[] = [
-    {
-      key: '1',
-      candidater: '韩立',
-      num: 32,
-      money: 667
-    },
-    {
-      key: '2',
-      candidater: '王林',
-      num: 32,
-      money: 1667
-    },
-    {
-      key: '3',
-      candidater: '陈平安',
       num: 3442,
       money: 6267
     },
@@ -160,7 +231,7 @@ export default function CandidateInfo() {
   };
 
   const handleElectionChange = (value: number) => {
-    setCurrentElection(value); // 更新候选人列表
+    setCurrentElection(BigInt(value)); // 更新候选人列表
   };
   
   const items: TabsProps['items'] = [
@@ -175,10 +246,11 @@ export default function CandidateInfo() {
   ];
   return (
     <>
+     <Spin spinning={loading} tip="正在交互中，请耐心等待..." percent='auto'>
       <div className="sortWrap">
         <span>当前选举：</span>
         <Select
-          defaultValue={currentElection}
+          defaultValue={Number(currentElection)}
           style={{ width: 240 }}
           onChange={handleElectionChange}
           options={electionList}
@@ -187,14 +259,15 @@ export default function CandidateInfo() {
       <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
       {currentTab === '1' ? 
         (
+          myData ?  
         <>
           <Card title="我的投票和捐款数">
             <Row gutter={16}>
                 <Col span={12}>
-                  <Statistic title="总投票数" value={112893} />
+                  <Statistic title="总投票数" value={Number(myData?.voteCount)} />
                 </Col>
                 <Col span={12}>
-                  <Statistic title="总捐款金额" value={112893} precision={2} />
+                  <Statistic title="总捐款金额" value={Number(myData?.donationAmount)} precision={0} />
                   <Button style={{ marginTop: 16 }} type="primary" onClick={showModal}>
                     提款
                   </Button>
@@ -215,19 +288,25 @@ export default function CandidateInfo() {
             onCancel={handleCancel}>
             <div style={{display: 'flex', alignItems: 'center'}}>
                 <span style={{width: '80px'}}>捐款金额:</span>
-                <InputNumber suffix="wei" style={{ width: '100%' }} />
+                <InputNumber 
+                suffix="wei" 
+                style={{ width: '100%' }} 
+                value={donateValue} 
+                autoFocus 
+                onChange={handleDonateChange}/>
             </div>
           </Modal>
 
-        </>
+        </> : <h2 style={{textAlign: 'center', marginTop: '200px'}}>您未参加当前竞选，暂无候选数据</h2>
         ) :
         (
           <>
             <h2 style={{padding: '20px 0', fontSize: '16px', fontWeight: 'bold'}}>投票和捐款数据</h2>
-            <Table<DataType2> columns={columns2} dataSource={data2} />
+            <Table<DataType2> columns={columns2} dataSource={competitorsData} />
           </>
         )
       }
+      </Spin>
     
     </>
   )

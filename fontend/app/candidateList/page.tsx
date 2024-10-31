@@ -27,14 +27,13 @@ type FieldType = {
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'new' | 'edit'>('new');
   const [currentRecord, setCurrentRecord] = useState<DataType | null>(null);
   const [tableData, setTableData] =  useState<DataType[]>();
   const [loading, setLoading] = React.useState<boolean>(false);
   const [donateValue, setDonateValue] = useState(0);
   
   const [form] = Form.useForm();
-  const { connector, address } = getAccount(config);
+  const { connector } = getAccount(config);
   const searchParams = useSearchParams();
   const name = searchParams.get('name'); 
   const electionId = searchParams.get('id'); 
@@ -54,8 +53,6 @@ export default function Home() {
       ]
     },).then((result) => {
       const res = result as DataType[];
-      console.log(result)
-      console.log(res)
       setTableData(res);
     })
     .catch((error) => {
@@ -107,7 +104,8 @@ export default function Home() {
         }
       }
       
-    } catch (err: any) {
+    // @typescript-eslint/no-unused-vars
+    } catch (err) {
       message.error('表单校验失败');
     }
   };
@@ -153,19 +151,10 @@ export default function Home() {
     }
   }
 
-  const showModal = (type: 'new' | 'edit', record?: DataType) => {
-    setModalType(type);
+  const showModal = () => {
     setIsModalOpen(true);
-    if (type === 'edit' && record) {
-      form.setFieldsValue({
-        username: record.name,
-        desc: record.description,
-      });
-      setCurrentRecord(record);
-    } else {
-      form.resetFields();
+    form.resetFields();
       setCurrentRecord(null);
-    }
   };
 
   const showDonateModal = (record?: DataType) => {
@@ -188,7 +177,7 @@ export default function Home() {
   }
   const doDOnate = (addr: string) => {
     if (currentRecord) {
-      console.log(addr,ABIConfig )
+      console.log(addr)
       writeContract(config,{
         address: ABIConfig.address,
         abi: ABIConfig.abi,
@@ -240,7 +229,6 @@ export default function Home() {
           waitForTransactionReceipt(config, {
             hash: TXHash,
           }).then((result) => {
-            console.log(111111, result)
             if (result.status == 'success') {
               doDOnate(_addr);
             }
@@ -252,7 +240,7 @@ export default function Home() {
         .catch((error) => {
             console.error("Error:", error); // 错误处理
             setLoading(false);
-            message.error(`捐款失败2222222:${error}`);
+            message.error(`捐款失败:${error}`);
         });
       }
     } catch (error) {
@@ -323,13 +311,13 @@ export default function Home() {
           <h2 style={{ padding: '20px 0', fontSize: '16px', fontWeight: 'bold' }}>当前选举：{name}</h2>
           <div >
             <Button style={{marginRight: '25px'}} type="default" onClick={() => router.back()}>返回</Button>
-            <Button type="primary" onClick={() => showModal('new')}>新增候选人</Button>
+            <Button type="primary" onClick={showModal}>新增候选人</Button>
           </div>
         </div>
         <Table<DataType> columns={columns} dataSource={tableData} />
           
         <Modal
-          title={modalType === 'new' ? '新增候选人' : '编辑候选人'}
+          title="新增候选人"
           centered={true}
           okText="确认"
           cancelText="取消"

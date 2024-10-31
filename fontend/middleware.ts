@@ -24,6 +24,7 @@ export function middleware(req: NextRequest) {
   }
   // 默认调整路由
   let forwardUrl = '/'
+  console.log(isSuperAdminStatus)
   if (isSuperAdminStatus?.value == 'true' || isAdminStatus?.value == 'true') {
     protectedPaths = ['/allCandidates', '/candidateList', '/candidateInfo', '/']
   } else {

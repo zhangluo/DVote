@@ -14,6 +14,7 @@ import {
   clearSuperAdminStatus 
 } from '@/config/wagmi/wagmiCookies';
 import AddAmin from '../AddAdmin/page';
+import GetTokenBtn from '../GetToken/page';
 // import Link from "next/link";
 
 const { Header } = Layout;
@@ -67,6 +68,7 @@ const HeadNav: React.FC = () => {
       <div style={{ marginLeft: 'auto', alignItems: 'center' }} className='flex gap-5'>
         <ConnectButton />
         {(isSuperAdmin || isAdmin) && <AddAmin/>}
+        {(isSuperAdmin || isAdmin) && <GetTokenBtn/>}
       </div>
     </Header>
   );

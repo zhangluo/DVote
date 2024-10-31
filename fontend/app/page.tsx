@@ -98,7 +98,7 @@ const ElectionList: React.FC = () => {
       }
     })
     .catch((error) => {
-        console.error("Errorssss:", error);
+        console.error("Error:", error);
     });
   }
   const showModal = async() => {
@@ -115,7 +115,7 @@ const ElectionList: React.FC = () => {
           functionName: 'createElection',
           args: [
             candidater,
-            BigInt(300000),
+            BigInt(30000),
           ],
           connector
         },

@@ -7,9 +7,8 @@ const nextConfig = {
             destination: 'https://external-api.example.com/:path*', // 代理的目标路径
           },
         ];
-      },
+      }
 };
-// n
 
 
 export default nextConfig;
