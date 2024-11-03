@@ -132,14 +132,17 @@ const ElectionList: React.FC = () => {
   
       if (result) {
         const length = typedResult[0].length;
-    
+        // 获取当前时间的时间戳（以秒为单位）
+        const currentTimestamp = Math.floor(Date.now() / 1000);
         for (let i = 0; i < length; i++) {
+          const electionEndTime = Number(typedResult[3][i]);
+          const valided = (currentTimestamp < electionEndTime) && typedResult[4][i]
           res.push({
             ids: typedResult[0][i], 
             names: typedResult[1][i],
             startTimes: typedResult[2][i],
             endTimes: typedResult[3][i],
-            isValids: typedResult[4][i]
+            isValids: valided
           });
         }
         setTableData(res)

@@ -135,7 +135,6 @@ const App: React.FC = () => {
           waitForTransactionReceipt(config, {
             hash: TXHash,
           }).then((result) => {
-            console.log(111111, result)
             if (result.status == 'success') {
               doDOnate(_addr);
             }
@@ -147,54 +146,13 @@ const App: React.FC = () => {
         .catch((error) => {
             console.error("Error:", error); // 错误处理
             setLoading(false);
-            message.error(`捐款失败2222222:${error}`);
+            message.error(`捐款失败:${error}`);
         });
       }
     } catch (error) {
       console.error("Contract Write Error:", error);
     }
   }
-
-  // const handleDonate = () => {
-  //   try {
-  //     if (currentCandidate) {
-  //       setLoading(true);
-  //       CancelDonate();
-  //       writeContract(config,{
-  //         address: ABIConfig.address,
-  //         abi: ABIConfig.abi,
-  //         functionName: 'donate',
-  //         args: [
-  //           BigInt(Number(currentCandidate?.id)),
-  //           currentCandidate.candidateAddress
-  //         ],
-  //         value: BigInt(donateValue), 
-  //         connector
-  //       }).then((TXHash) => {
-  //         waitForTransactionReceipt(config, {
-  //           hash: TXHash,
-  //         }).then((result) => {
-  //           if (result.status == 'success') {
-  //             setLoading(false)
-  //             message.success('捐款成功!');
-  //             getALLCandidateList();
-  //           }
-  //         })
-  //         .catch((error) => {
-  //             console.error("error:", error); // 错误处理
-  //         });
-  //       })
-  //       .catch((error) => {
-  //           console.error("Error:", error); // 错误处理
-  //           setLoading(false);
-  //           message.error(`捐款失败:${error}`);
-  //       });
-  //     }
-      
-  //   } catch (error) {
-  //     console.error("Contract Write Error:", error);
-  //   }
-  // }
 
   const doVote = (record?: ListType) => {
     try {

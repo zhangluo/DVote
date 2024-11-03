@@ -81,11 +81,15 @@ export default function CandidateInfo() {
       if (result) {
         const length = typedResult[0].length;
     
+        // 获取当前时间的时间戳（以秒为单位）
+        const currentTimestamp = Math.floor(Date.now() / 1000);
         for (let i = 0; i < length; i++) {
+          const electionEndTime = Number(typedResult[3][i]);
+          const valided = (currentTimestamp < electionEndTime) && typedResult[4][i]
           const _newData = {
             value: Number(typedResult[0][i]), 
             label: typedResult[1][i],
-            isValids: typedResult[4][i]
+            isValids: valided
           }
           if (i==0) { 
             setCurrentElection(_newData)
@@ -209,15 +213,15 @@ export default function CandidateInfo() {
     },
     {
       title: '投票数',
-      dataIndex: 'voteCount',
-      key: 'voteCount',
-      render:(voteCount: bigint)=> <span>{Number(voteCount)}</span>
+      dataIndex: 'voteCounts',
+      key: 'voteCounts',
+      render:(voteCounts: bigint)=> <span>{Number(voteCounts)}</span>
     },
     {
       title: '捐款数(Wei)',
-      dataIndex: 'donationAmount',
-      key: 'donationAmount',
-      render:(donationAmount: bigint)=> <span>{Number(donationAmount)}</span>
+      dataIndex: 'donateAmounts',
+      key: 'donateAmounts',
+      render:(donateAmounts: bigint)=> <span>{Number(donateAmounts)}</span>
     },
   ];
   

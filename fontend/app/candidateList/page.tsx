@@ -42,7 +42,7 @@ export default function Home() {
   useEffect(()=> {
     getCandidateList();
   }, [])
-
+  
   const getCandidateList= () => {
     readContract(config, {
       address: ABIConfig.address,
