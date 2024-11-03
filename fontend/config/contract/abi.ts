@@ -438,6 +438,40 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "donateInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "electionId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "candidateAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "donateAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "donateTime",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "electionCount",
 		"outputs": [
@@ -540,24 +574,9 @@
 						"type": "string"
 					},
 					{
-						"internalType": "uint256",
-						"name": "voteCount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "donationAmount",
-						"type": "uint256"
-					},
-					{
 						"internalType": "address payable",
 						"name": "candidateAddress",
 						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "donateTime",
-						"type": "uint256"
 					},
 					{
 						"internalType": "bool",
@@ -566,12 +585,52 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "voteTime",
+						"name": "voteCounts",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "donateAmounts",
 						"type": "uint256"
 					}
 				],
 				"internalType": "struct DVote.Candidate[]",
 				"name": "candidates",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getAllDonateInfo",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "electionId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "candidateAddr",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "donateAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "donateTime",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct DVote.Donate[]",
+				"name": "",
 				"type": "tuple[]"
 			}
 		],
@@ -601,6 +660,46 @@
 				"internalType": "uint256[]",
 				"name": "",
 				"type": "uint256[]"
+			},
+			{
+				"internalType": "bool[]",
+				"name": "",
+				"type": "bool[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getAllVoteInfo",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "electionId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "candidateAddr",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "voteAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "voteTime",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct DVote.Vote[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
@@ -639,24 +738,9 @@
 						"type": "string"
 					},
 					{
-						"internalType": "uint256",
-						"name": "voteCount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "donationAmount",
-						"type": "uint256"
-					},
-					{
 						"internalType": "address payable",
 						"name": "candidateAddress",
 						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "donateTime",
-						"type": "uint256"
 					},
 					{
 						"internalType": "bool",
@@ -665,7 +749,12 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "voteTime",
+						"name": "voteCounts",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "donateAmounts",
 						"type": "uint256"
 					}
 				],
@@ -706,16 +795,6 @@
 				"internalType": "string",
 				"name": "",
 				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
 			},
 			{
 				"internalType": "bool",
@@ -884,6 +963,40 @@
 		"name": "vote",
 		"outputs": [],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "voteInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "electionId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "candidateAddr",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "voteAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "voteTime",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{

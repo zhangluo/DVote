@@ -1,7 +1,7 @@
 'use client'; // 声明为客户端组件
 
 import React, { useState, useEffect } from 'react';
-import { Space, Table, Button, Modal, Input,Spin, message } from 'antd';
+import { Space, Table, Button, Modal, Input,Spin, message, Popconfirm,Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRouter } from 'next/navigation'; // 使用新的 navigation 包
 // import readDvoteContract from '@/hooks/readContract'
@@ -14,6 +14,7 @@ interface DataType {
   ids: bigint;
   startTimes: bigint;
   endTimes: bigint;
+  isValids: boolean;
 }
 
 const ElectionList: React.FC = () => {
@@ -58,6 +59,13 @@ const ElectionList: React.FC = () => {
       render:(endTimes: bigint)=> <span>{formatBigIntToDate(endTimes)}</span>
     },
     {
+      title: '状态',
+      dataIndex: 'isValids',
+      key: 'isValids',
+      render:(isValids: boolean)=> <span>{isValids ? 
+      <Tag color="success">正常</Tag> : <Tag color="error">已结束</Tag>}</span>
+    },
+    {
       title: '操作',
       key: 'action',
       render: (_, record: DataType) => (
@@ -65,12 +73,51 @@ const ElectionList: React.FC = () => {
           <Button type="primary" onClick={() => handleNavigate(record)}>
             详情
           </Button>
-          <Button danger={true}>删除</Button>
+          <Popconfirm
+            title="关闭选举"
+            description="您确定要关闭该选举?"
+            onConfirm={() => handleRemove(record.ids)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button danger disabled={!record.isValids}>关闭</Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ];
-  
+  const handleRemove = (id: any) => {
+    if (!id) return
+    console.log(id)
+    setLoading(true);
+    writeContract(config,
+      {
+        address: ABIConfig.address,
+        abi: ABIConfig.abi,
+        functionName: 'removeElections',
+        args: [[id]],
+        connector
+      },
+    ).then((TXHash) => {
+      waitForTransactionReceipt(config, {
+        hash: TXHash,
+      }).then((result) => {
+        if (result.status == 'success') {
+          setLoading(false);
+          message.success('选举关闭成功！')
+          getElections();
+        }
+      })
+      .catch((error) => {
+          console.error("Error:", error);
+      });
+    })
+    .catch((error) => {
+        setLoading(false);
+        message.error(`关闭失败${error}`)
+    });
+  }
+
   const getElections = ()=> {
     readContract(config, {
       address: ABIConfig.address,
@@ -80,8 +127,8 @@ const ElectionList: React.FC = () => {
     }).then((result) => {
       console.log(1111, result)
        // 类型断言 result 为我们期望的结构
-      const typedResult = result as [bigint[], string[], bigint[], bigint[]];
-      const res: Array<{ ids: bigint, names: string, startTimes: bigint, endTimes: bigint }> = [];
+      const typedResult = result as [bigint[], string[], bigint[], bigint[], boolean[]];
+      const res: Array<{ ids: bigint, names: string, startTimes: bigint, endTimes: bigint, isValids:boolean }> = [];
   
       if (result) {
         const length = typedResult[0].length;
@@ -91,7 +138,8 @@ const ElectionList: React.FC = () => {
             ids: typedResult[0][i], 
             names: typedResult[1][i],
             startTimes: typedResult[2][i],
-            endTimes: typedResult[3][i]
+            endTimes: typedResult[3][i],
+            isValids: typedResult[4][i]
           });
         }
         setTableData(res)
@@ -149,7 +197,7 @@ const ElectionList: React.FC = () => {
 
   return (
     <>
-      <Spin spinning={loading} tip="正在在交互中，请耐心等待..." percent='auto'>
+      <Spin spinning={loading} tip="正在合约交互中，请耐心等待..." percent='auto'>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <h1 className="TableTitle">选举列表</h1>
           <Button type="primary" onClick={showModal}>创建选举</Button>

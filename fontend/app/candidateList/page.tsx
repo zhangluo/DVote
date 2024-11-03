@@ -12,8 +12,8 @@ interface DataType {
   name: string;
   description: string;
   imageUrl: string;
-  voteCount: bigint;
-  donationAmount: bigint;
+  voteCounts: bigint;
+  donateAmounts: bigint;
   candidateAddress: string;
   isValid: boolean;
 }
@@ -53,6 +53,7 @@ export default function Home() {
       ]
     },).then((result) => {
       const res = result as DataType[];
+      console.log(result)
       setTableData(res);
     })
     .catch((error) => {
@@ -272,15 +273,15 @@ export default function Home() {
     },
     {
       title: '投票数',
-      dataIndex: 'voteCount',
-      key: 'voteCount',
-      render:(voteCount: bigint)=> <span>{Number(voteCount)}</span>
+      dataIndex: 'voteCounts',
+      key: 'voteCounts',
+      render:(voteCounts: bigint)=> <span>{Number(voteCounts)}</span>
     },
     {
       title: '捐款数(Wei)',
-      dataIndex: 'donationAmount',
-      key: 'donationAmount',
-      render:(donationAmount: bigint)=> <span>{Number(donationAmount)}</span>
+      dataIndex: 'donateAmounts',
+      key: 'donateAmounts',
+      render:(donateAmounts: bigint)=> <span>{Number(donateAmounts)}</span>
     },
     {
       title: '操作',

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // AuthPage.tsx
 "use client";
 
@@ -15,6 +16,7 @@ import { useSignMessage } from 'wagmi';
 import { config, ABIConfig } from '@/config/wagmi/wagmiConfig';
 import { readContract } from '@wagmi/core';
 
+// eslint-disable-next-line react/display-name
 const AuthPage = React.memo(() => {
   const { address, isConnected } = useAccount();
   const router = useRouter();
@@ -36,7 +38,7 @@ const AuthPage = React.memo(() => {
         console.log('signature', signature);
       })();
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, signMessage]);
 
 
   const checkIsSuperAdmin = (address: string) => {
@@ -99,7 +101,7 @@ const AuthPage = React.memo(() => {
       console.log('Signature successful:', data);
       router.push(forwardUrl);
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, data, router, forwardUrl]);
 
   useEffect(() => {
     if (isError && error) {
@@ -169,17 +171,5 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 };
 
-const globalStyles = `
-  @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  @keyframes containerFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-`;
 
 export default AuthPage;

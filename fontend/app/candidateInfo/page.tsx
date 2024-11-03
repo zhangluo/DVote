@@ -17,27 +17,28 @@ interface DataType {
 interface DataType2 {
   id: BigInt;
   name: string;
-  donationAmount: BigInt;
-  voteCount: BigInt;
+  donateAmounts: BigInt;
+  voteCounts: BigInt;
 }
 interface selctOptions {
   label: string;
   value: number;
+  isValids: boolean;
 }
 interface DataType3 {
   id: bigint;
   name: string;
   description: string;
   imageUrl: string;
-  voteCount: bigint;
-  donationAmount: bigint;
+  voteCounts: bigint;
+  donateAmounts: bigint;
   candidateAddress: string;
   isValid: boolean;
 }
 
 export default function CandidateInfo() {
   const [currentTab, setCurrentTab] = useState('1')
-  const [currentElection, setCurrentElection] = useState(BigInt(1))
+  const [currentElection, setCurrentElection] = useState<selctOptions | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [electionList, setElectionList] =  useState<selctOptions[]>();
   const [myData, setMyData] =  useState<DataType3>();
@@ -48,6 +49,13 @@ export default function CandidateInfo() {
 
   const { connector } = getAccount(config);
   const showModal = (user:any) => {
+    if (currentElection&& currentElection.isValids) {
+      message.warning('当前选举还未结束，暂时无法提款，请选举结束以后再提款')
+      return
+    }
+    if (myData && Number(myData.donateAmounts) == 0) {
+      message.warning('当前可待提款余额为0')
+    }
     setIsModalOpen(true);
   };
 
@@ -67,19 +75,23 @@ export default function CandidateInfo() {
       args: [], 
     }).then((result) => {
         // 类型断言 result 为期望的结构
-      const typedResult = result as [bigint[], string[], bigint[], bigint[]];
-      const res: Array<{ value: number, label: string }> = [];
+      const typedResult = result as [bigint[], string[], bigint[], bigint[], boolean[]];
+      const res: Array<{ value: number, label: string, isValids: boolean }> = [];
   
       if (result) {
         const length = typedResult[0].length;
     
         for (let i = 0; i < length; i++) {
-          res.push({
+          const _newData = {
             value: Number(typedResult[0][i]), 
-            label: typedResult[1][i]
-          });
+            label: typedResult[1][i],
+            isValids: typedResult[4][i]
+          }
+          if (i==0) { 
+            setCurrentElection(_newData)
+          }
+          res.push(_newData);
         }
-        setCurrentElection(BigInt(res[0].value))
         setElectionList(res)
       }
     })
@@ -88,12 +100,13 @@ export default function CandidateInfo() {
     });
   }
   const getCandidateList= () => {
+    if (!currentElection) return
     readContract(config, {
       address: ABIConfig.address,
       abi: ABIConfig.abi,
       functionName: 'getCandidates',
       args: [
-        currentElection
+        currentElection.value
       ]
     },).then((result) => {
       const res = result as DataType3[];
@@ -105,8 +118,8 @@ export default function CandidateInfo() {
           setMyData(item)
           console.log(myData)
         } else {
-          const {id,name,voteCount,donationAmount} = item;
-          competitors_data.push({id, name, voteCount, donationAmount})
+          const {id,name,voteCounts,donateAmounts} = item;
+          competitors_data.push({id, name, voteCounts, donateAmounts})
         }
       })
       setCompetitorsData(competitors_data);
@@ -116,12 +129,13 @@ export default function CandidateInfo() {
     });
   }
   const doWithDraw = () => {
+    if (!currentElection) return
     writeContract(config,{
       address: ABIConfig.address,
       abi: ABIConfig.abi,
       functionName: 'withdraw',
-      args: [
-        currentElection,
+      args: [ 
+        currentElection.value,
         BigInt(donateValue)
       ],
       connector
@@ -230,8 +244,8 @@ export default function CandidateInfo() {
     setCurrentTab(key)
   };
 
-  const handleElectionChange = (value: number) => {
-    setCurrentElection(BigInt(value)); // 更新候选人列表
+  const handleElectionChange = (value: number, option:any | Array<selctOptions>) => {
+    setCurrentElection(option); // 更新候选人列表
   };
   
   const items: TabsProps['items'] = [
@@ -250,7 +264,8 @@ export default function CandidateInfo() {
       <div className="sortWrap">
         <span>当前选举：</span>
         <Select
-          defaultValue={Number(currentElection)}
+          labelInValue={true}
+          defaultValue={1}
           style={{ width: 240 }}
           onChange={handleElectionChange}
           options={electionList}
@@ -264,10 +279,10 @@ export default function CandidateInfo() {
           <Card title="我的投票和捐款数">
             <Row gutter={16}>
                 <Col span={12}>
-                  <Statistic title="总投票数" value={Number(myData?.voteCount)} />
+                  <Statistic title="总投票数" value={Number(myData?.voteCounts)} />
                 </Col>
                 <Col span={12}>
-                  <Statistic title="总捐款金额" value={Number(myData?.donationAmount)} precision={0} />
+                  <Statistic title="总捐款金额" value={Number(myData?.donateAmounts)} precision={0} />
                   <Button style={{ marginTop: 16 }} type="primary" onClick={showModal}>
                     提款
                   </Button>

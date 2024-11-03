@@ -14,11 +14,11 @@ interface ABIConfigType {
   abi: readonly any[];
 }
 const ABIConfig: ABIConfigType = {
-  address: '0xB671Ba4A1F7fDd82E183F85eDaBD1ed193264e61',
+  address: '0x94a55B1194aB49Bba27C96E2AB7537603DE9b2a3',
   abi,
 };
 const ABITokenConfig: ABIConfigType = {
-  address: '0xaD8DDb92f5F6069f6809eb314C9D967B76c8d315',
+  address: '0x63fb73576ae693dB4df9b0733F5826d71Ae9eEa1',
   abi: tokenAbi,
 };
 

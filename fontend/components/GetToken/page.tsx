@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import { notification, Button, message, ConfigProvider,Modal,Form, InputNumber, Input } from 'antd';
 import { config, ABIConfig, ABITokenConfig} from '@/config/wagmi/wagmiConfig';
 import { writeContract, getAccount, waitForTransactionReceipt } from '@wagmi/core';
-import { DollarOutlined } from '@ant-design/icons';
+import { SendOutlined } from '@ant-design/icons';
 import { createStyles } from 'antd-style';
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
@@ -131,7 +131,7 @@ const GetTokenBtn: React.FC = () => {
         <>
         {contextHolder}
         <ConfigProvider button={{className: styles.linearGradientButton}}>
-            <Button  icon={<DollarOutlined />}type="primary" loading={loading} onClick={showModal}>{loading ? '正在发送中...' : '发送代币MTK'}</Button>
+            <Button  icon={<SendOutlined />}type="primary" loading={loading} onClick={showModal}>{loading ? '正在发送中...' : '发送代币MTK'}</Button>
         </ConfigProvider>
         <Modal
           title="发送代币"
