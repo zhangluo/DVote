@@ -25,8 +25,8 @@ const App: React.FC = () => {
     name: string;
     description: string;
     imageUrl: string;
-    voteCount: bigint;
-    donationAmount: bigint;
+    voteCounts: bigint;
+    donateAmounts: bigint;
     candidateAddress: string;
     isValid: boolean;
   };
@@ -52,10 +52,10 @@ const App: React.FC = () => {
     let sortedList = [...candidateList];
     if (value === "1") {
       // 按投票数降序排序
-      sortedList.sort((a, b) => Number(b.voteCount) - Number(a.voteCount));
+      sortedList.sort((a, b) => Number(b.voteCounts) - Number(a.voteCounts));
     } else if (value === "2") {
       // 按捐款数降序排序
-      sortedList.sort((a, b) => Number(b.donationAmount) - Number(a.donationAmount));
+      sortedList.sort((a, b) => Number(b.donateAmounts) - Number(a.donateAmounts));
     }
     setCandidateList(sortedList); // 更新候选人列表
   };
@@ -262,8 +262,8 @@ const App: React.FC = () => {
                 />
                 <div className="infos">
                   <p>地址:  {candidate.candidateAddress.toString()}</p>
-                  <p>投票数： {candidate.voteCount.toString()}</p>
-                  <p>捐款数： {candidate.donationAmount.toString()} wei</p>
+                  <p>投票数： {candidate.voteCounts.toString()}</p>
+                  <p>捐款数： {candidate.donateAmounts.toString()} wei</p>
                 </div>
                 <div className="actions">
                   <Button type="primary" onClick={() => doVote(candidate)}>投票</Button>
